@@ -1,0 +1,25 @@
+{
+  "name": "Amedeo Cardigan Row Tracker",
+  "short_name": "Amedeo Tracker",
+  "description": "Row-by-row tracker for the five pieces of the Amedeo cardigan",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#120f1a",
+  "theme_color": "#120f1a",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

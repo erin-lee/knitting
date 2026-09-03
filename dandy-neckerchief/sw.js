@@ -1,6 +1,6 @@
 // Bump this version string whenever you update index.html so the new
 // version gets picked up instead of the cached one.
-const CACHE_NAME = 'dandy-tracker-v1';
+const CACHE_NAME = 'dandy-tracker-v2';
 const ASSETS = [
   './',
   './index.html',
