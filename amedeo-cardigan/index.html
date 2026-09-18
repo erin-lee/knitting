@@ -197,7 +197,13 @@ button{font-family:inherit; cursor:pointer; color:inherit;}
 .chart-panel-note{ padding:10px 4px 2px; font-size:12.5px; color:var(--text-dim); text-align:center; font-weight:600; }
 
 .tk-footer{ display:flex; justify-content:center; padding: 6px 20px 26px; }
-.reset-link{ background:none; border:none; color:var(--text-dim); font-size:12px; font-weight:700; text-decoration:underline; opacity:.7; padding:8px;}
+.row-jump-link{ background:none; border:none; color:var(--text-dim); font-size:12px; font-weight:700; text-decoration:underline; opacity:.75; padding:8px;}
+/* Deliberately tiny + low contrast: destructive, so it should be hard to hit by accident. */
+.reset-all-link{
+  background:none; border:none; color:var(--text-dim); font-size:10.5px; font-weight:700;
+  letter-spacing:.03em; opacity:.45; padding:4px 8px; text-decoration:underline;
+}
+.reset-all-link:active{ opacity:.8; }
 
 /* ---------- CHART OVERLAY ---------- */
 .chart-overlay{
@@ -238,6 +244,13 @@ button{font-family:inherit; cursor:pointer; color:inherit;}
 .modal-btn{ flex:1; padding:14px; border-radius:14px; border:none; font-weight:800; font-size:14.5px; font-family:'Manrope';}
 .modal-btn.cancel{ background:var(--card); color:var(--text); border:1.5px solid var(--line);}
 .modal-btn.confirm{ background:var(--danger); color:#fff; }
+.modal-btn.primary{ background:linear-gradient(135deg, var(--pink), var(--violet) 60%, var(--cyan)); color:#12061a; }
+.modal-input{
+  width:100%; box-sizing:border-box; margin-bottom:18px; padding:14px 16px; border-radius:14px;
+  background:var(--card); border:1.5px solid var(--line); color:var(--text);
+  font-family:'Unbounded'; font-weight:800; font-size:22px; text-align:center;
+}
+.modal-input:focus{ outline:none; border-color:var(--cyan); }
 
 .info-modal .legend-row{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--text); margin-bottom:10px; }
 .info-modal .legend-sym{ width:28px; height:28px; border-radius:8px; background:var(--card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:800; flex:none; font-size:13px;}
@@ -283,6 +296,10 @@ const CHART_D_WIDE_FRACS = {"main": {"23": [0.04521276595744681, 0.1223404255319
 <script>
 /* ============ DATA MODEL ============ */
 
+/* Body chart length, in chart rows (tracker rows 17 .. 16+BODY_CHART_ROWS).
+   Cropped from the original 114 rows. */
+const BODY_CHART_ROWS = 88;
+
 function buildBodyPiece(cfg){
   const rows = [];
   let stitches = cfg.castOn;
@@ -300,7 +317,7 @@ function buildBodyPiece(cfg){
     }
     rows.push({n:r, phase:'rib', rs, chartRow:null, pos:null, stitches, text, milestone, badge});
   }
-  for(let c=1;c<=114;c++){
+  for(let c=1;c<=BODY_CHART_ROWS;c++){
     const abs = 16+c;
     const rs = c%2===1;
     const pos = ((c-1)%10)+1;
@@ -323,20 +340,20 @@ function buildBodyPiece(cfg){
       text += ' V-NECK SHAPING BEGINS — decrease on this row and every RS row from here to the end.';
     }
     let willDecrease=false;
-    if(cfg.vneckStart && rs && c>=cfg.vneckStart && c<114){
+    if(cfg.vneckStart && rs && c>=cfg.vneckStart && c<BODY_CHART_ROWS){
       willDecrease = true;
       if(cfg.decreaseType==='right') text += ' Decrease: k2tog over the last 2 sts before the button-band ribbing.';
       if(cfg.decreaseType==='left') text += ' Decrease: work 6 sts in rib, then sl 1 knitwise, k1, pass slipped st over.';
     }
     rows.push({n:abs, phase:'chart', rs, chartRow:c, pos, stitches, text, milestone, badge});
     if(willDecrease) stitches -= 1;
-    if(c===114 && !cfg.extraFinalRow){
+    if(c===BODY_CHART_ROWS && !cfg.extraFinalRow){
       rows[rows.length-1].text += ` Cast off all remaining ${stitches} sts — piece complete!`;
       rows[rows.length-1].milestone='final'; rows[rows.length-1].badge='Final row';
     }
   }
   if(cfg.extraFinalRow){
-    rows.push({n:16+114+1, phase:'castoff', rs:null, chartRow:null, pos:null, stitches,
+    rows.push({n:16+BODY_CHART_ROWS+1, phase:'castoff', rs:null, chartRow:null, pos:null, stitches,
       text:`Cast off all ${stitches} sts. Piece complete!`, milestone:'final', badge:'Final row'});
   }
   return rows;
@@ -372,12 +389,12 @@ function buildSleeve(){
 }
 
 const PIECES = [
-  { key:'back', name:'Back', castOn:79, chartLabel:'A', img:CHART_A_RIGHT, wCm:51, lCm:53,
+  { key:'back', name:'Back', castOn:79, chartLabel:'A', img:CHART_A_RIGHT, wCm:51, lCm:42,
     rows: buildBodyPiece({castOn:79, buttonholeRib13:false, buttonholeChartRows:null, vneckStart:null, decreaseType:null, extraFinalRow:true, chartLabel:'A'}) },
-  { key:'rightFront', name:'Right Front', castOn:46, chartLabel:'B', img:CHART_B, wCm:29, lCm:53,
-    rows: buildBodyPiece({castOn:46, buttonholeRib13:true, buttonholeChartRows:[21,43,65], vneckStart:75, decreaseType:'right', extraFinalRow:false, chartLabel:'B'}) },
-  { key:'leftFront', name:'Left Front', castOn:46, chartLabel:'C', img:CHART_C, wCm:29, lCm:53,
-    rows: buildBodyPiece({castOn:46, buttonholeRib13:false, buttonholeChartRows:null, vneckStart:75, decreaseType:'left', extraFinalRow:false, chartLabel:'C'}) },
+  { key:'rightFront', name:'Right Front', castOn:46, chartLabel:'B', img:CHART_B, wCm:29, lCm:42,
+    rows: buildBodyPiece({castOn:46, buttonholeRib13:true, buttonholeChartRows:[21,43], vneckStart:49, decreaseType:'right', extraFinalRow:false, chartLabel:'B'}) },
+  { key:'leftFront', name:'Left Front', castOn:46, chartLabel:'C', img:CHART_C, wCm:29, lCm:42,
+    rows: buildBodyPiece({castOn:46, buttonholeRib13:false, buttonholeChartRows:null, vneckStart:49, decreaseType:'left', extraFinalRow:false, chartLabel:'C'}) },
   { key:'sleeve1', name:'Sleeve 1', castOn:37, chartLabel:'D', img:CHART_D_WIDE, wCm:43, lCm:40, rows: buildSleeve() },
   { key:'sleeve2', name:'Sleeve 2', castOn:37, chartLabel:'D', img:CHART_D_WIDE, wCm:43, lCm:40, rows: buildSleeve() },
 ];
@@ -390,9 +407,9 @@ function measurementText(pc){
 const FINISH_TASKS = [
   'Wet block all five pieces — stretch to measurements and let dry.',
   'Sew the shoulder seams.',
-  'Sew the side seams (size XS: sew up to row 68).',
+  'Sew the side seams (size XS: sew up to row 42).',
   'Sew the sleeve seams, then attach both sleeves to the back and front parts.',
-  'Sew the 4 buttons onto the left front part.',
+  'Sew the 3 buttons onto the left front part.',
 ];
 
 const CARD_ACCENTS = {
@@ -480,7 +497,7 @@ let progress = null;
 let screen = 'home';
 let activePieceKey = null;
 let chartOpen = false;
-let modal = null; // 'info' | {type:'reset', pieceKey}
+let modal = null; // 'info' | {type:'resetAll'} | {type:'setRow', pieceKey}
 
 function defaultProgress(){
   const p = {};
@@ -716,7 +733,7 @@ function renderTracker(){
       <button class="minus-btn" id="minusBtn">−</button>
       <button class="plus-btn ${isDone?'done-state':''}" id="plusBtn">${isDone ? 'Piece complete 🎉' : 'Row done — next row'}</button>
     </div>
-    <div class="tk-footer"><button class="reset-link" id="resetBtn">Reset this piece</button></div>
+    <div class="tk-footer"><button class="row-jump-link" id="setRowBtn">Jump to a row</button></div>
   </div>
   `;
 
@@ -732,7 +749,7 @@ function renderTracker(){
       render();
     });
   }
-  document.getElementById('resetBtn').addEventListener('click', ()=>{ modal = {type:'reset', pieceKey:activePieceKey}; render(); });
+  document.getElementById('setRowBtn').addEventListener('click', ()=>{ modal = {type:'setRow', pieceKey:activePieceKey}; render(); });
   document.getElementById('plusBtn').addEventListener('click', ()=>{
     if(progress[activePieceKey].row <= total){
       progress[activePieceKey].row += 1;
@@ -773,7 +790,7 @@ function renderFinishing(){
       <div class="tk-track"><div class="tk-fill" style="width:${(doneCount/5)*100}%"></div></div>
     </div>
     <div class="finish-list">${items}</div>
-    <div class="tk-footer"><button class="reset-link" id="resetFinish">Reset checklist</button></div>
+    <div class="tk-footer"><button class="reset-all-link" id="resetAll">Reset all progress</button></div>
   `;
   document.getElementById('goHome').addEventListener('click', ()=>{ screen='home'; render(); });
   document.querySelectorAll('.finish-item').forEach(btn=>{
@@ -784,7 +801,7 @@ function renderFinishing(){
       render();
     });
   });
-  document.getElementById('resetFinish').addEventListener('click', ()=>{ modal = {type:'resetFinish'}; render(); });
+  document.getElementById('resetAll').addEventListener('click', ()=>{ modal = {type:'resetAll'}; render(); });
 }
 
 /* ============ CHART OVERLAY (pan/zoom) ============ */
@@ -946,42 +963,56 @@ function renderModal(){
     return;
   }
 
-  if(modal.type === 'reset'){
+  if(modal.type === 'setRow'){
     const pc = pieceByKey(modal.pieceKey);
+    const total = pc.rows.length;
+    const current = Math.min(progress[modal.pieceKey].row, total);
     root.innerHTML = `
       <div class="modal-sheet">
-        <div class="modal-title">Reset ${pc.name}?</div>
-        <div class="modal-text">This sets ${pc.name} back to row 1. Your other pieces won't be affected. This can't be undone.</div>
+        <div class="modal-title">Which row are you on?</div>
+        <div class="modal-text">Enter the row of ${pc.name} you're about to knit — handy if you started this piece away from the tracker. 1–${total}.</div>
+        <input class="modal-input" id="rowInput" type="number" inputmode="numeric" min="1" max="${total}" value="${current}">
         <div class="modal-btn-row">
-          <button class="modal-btn cancel" id="cancelReset">Cancel</button>
-          <button class="modal-btn confirm" id="confirmReset">Reset piece</button>
+          <button class="modal-btn cancel" id="cancelSetRow">Cancel</button>
+          <button class="modal-btn primary" id="confirmSetRow">Go to row</button>
         </div>
       </div>`;
     document.body.appendChild(root);
-    document.getElementById('cancelReset').addEventListener('click', ()=>{ modal=null; render(); });
-    document.getElementById('confirmReset').addEventListener('click', ()=>{
-      progress[modal.pieceKey].row = 1;
-      if(modal.pieceKey === 'back') progress.back.half = 'right';
-      saveProgress();
+
+    const input = document.getElementById('rowInput');
+    input.focus();
+    input.select();
+
+    const applyRow = ()=>{
+      const parsed = parseInt(input.value, 10);
+      if(!isNaN(parsed)){
+        progress[modal.pieceKey].row = Math.min(Math.max(parsed, 1), total);
+        if(modal.pieceKey === 'back') progress.back.half = 'right';
+        saveProgress();
+      }
       modal=null; render();
-    });
+    };
+
+    input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') applyRow(); });
+    document.getElementById('cancelSetRow').addEventListener('click', ()=>{ modal=null; render(); });
+    document.getElementById('confirmSetRow').addEventListener('click', applyRow);
     return;
   }
 
-  if(modal.type === 'resetFinish'){
+  if(modal.type === 'resetAll'){
     root.innerHTML = `
       <div class="modal-sheet">
-        <div class="modal-title">Reset checklist?</div>
-        <div class="modal-text">This unchecks all 5 finishing steps. This can't be undone.</div>
+        <div class="modal-title">Reset everything?</div>
+        <div class="modal-text">This sets all five pieces back to row 1 and unchecks all 5 finishing steps. This can't be undone.</div>
         <div class="modal-btn-row">
-          <button class="modal-btn cancel" id="cancelReset2">Cancel</button>
-          <button class="modal-btn confirm" id="confirmReset2">Reset checklist</button>
+          <button class="modal-btn cancel" id="cancelResetAll">Cancel</button>
+          <button class="modal-btn confirm" id="confirmResetAll">Reset everything</button>
         </div>
       </div>`;
     document.body.appendChild(root);
-    document.getElementById('cancelReset2').addEventListener('click', ()=>{ modal=null; render(); });
-    document.getElementById('confirmReset2').addEventListener('click', ()=>{
-      progress.finishing.done = [false,false,false,false,false];
+    document.getElementById('cancelResetAll').addEventListener('click', ()=>{ modal=null; render(); });
+    document.getElementById('confirmResetAll').addEventListener('click', ()=>{
+      progress = defaultProgress();
       saveProgress();
       modal=null; render();
     });
