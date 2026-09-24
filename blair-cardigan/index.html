@@ -1,0 +1,488 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Blair Cardigan Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="theme-color" content="#F6F2F5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Blair Tracker">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#F6F2F5; --surface:#FFFFFF; --surface-2:#F0E9EE; --ink:#2A2230; --muted:#766B7C; --line:#E3D9E1;
+  --accent:#B83D72; --accent-ink:#FFFFFF; --accent-soft:#F8E1EC; --hl:rgba(184,61,114,.30); --hl-edge:#B83D72; --past:rgba(184,61,114,.07);
+  --shape:#9C6B12; --shape-soft:#F7EBD2; --done:#B9AEB9; --chart-bg:#FFFFFF;
+  --shadow:0 1px 2px rgba(42,34,48,.06),0 8px 24px -12px rgba(42,34,48,.18);
+  --display:"Gloock",Georgia,"Times New Roman",serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#17131A; --surface:#211B25; --surface-2:#2A232F; --ink:#F0E8EF; --muted:#A99DAC; --line:#3A3140;
+    --accent:#E56E9E; --accent-ink:#1A0E14; --accent-soft:#3D2231; --hl:rgba(229,110,158,.38); --hl-edge:#D2336F; --past:rgba(229,110,158,.10);
+    --shape:#E0B45E; --shape-soft:#3A2F1C; --done:#5E5462; --chart-bg:#ECE6EB;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#17131A; --surface:#211B25; --surface-2:#2A232F; --ink:#F0E8EF; --muted:#A99DAC; --line:#3A3140;
+  --accent:#E56E9E; --accent-ink:#1A0E14; --accent-soft:#3D2231; --hl:rgba(229,110,158,.38); --hl-edge:#D2336F; --past:rgba(229,110,158,.10);
+  --shape:#E0B45E; --shape-soft:#3A2F1C; --done:#5E5462; --chart-bg:#ECE6EB;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;margin:0}
+button{font-family:inherit}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:18px 64px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- home ---------- */
+header.top{display:flex;flex-direction:column;gap:6px;padding-block:6px 16px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(36px,9vw,52px);line-height:1;margin:0;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--muted);font-size:13px}
+.meta b{color:var(--ink);font-weight:600}
+.sync{font-size:12px;color:var(--muted)}
+.resume{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;text-align:left;width:100%;
+  background:var(--accent);color:var(--accent-ink);border:0;border-radius:14px;padding:14px 16px;cursor:pointer;box-shadow:0 10px 26px -14px var(--accent)}
+.resume .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;opacity:.85}
+.resume .n{font-family:var(--display);font-size:24px;line-height:1.1;grid-column:1}
+.resume .r{font-family:var(--mono);font-weight:600;font-size:15px;grid-column:1}
+.resume .go{grid-row:1/4;grid-column:2;font-size:28px;line-height:1}
+.group-h{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:22px 0 10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.card{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);
+  border-radius:14px;padding:14px;cursor:pointer;box-shadow:var(--shadow);min-height:138px}
+.card:hover{border-color:var(--accent)}
+.card .nm{font-family:var(--display);font-size:22px;line-height:1.05}
+.card .sub{font-size:12px;color:var(--muted)}
+.card .foot{margin-top:auto;display:flex;flex-direction:column;gap:6px}
+.card .rw{font-family:var(--mono);font-size:13px;font-weight:600;display:flex;justify-content:space-between;gap:6px}
+.card .rw span:last-child{color:var(--muted);font-weight:500}
+.thumb{height:44px;border-radius:6px;background:var(--chart-bg) center/cover no-repeat;opacity:.9;border:1px solid var(--line)}
+.bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.card.done .bar i{background:var(--muted)}
+
+/* ---------- detail ---------- */
+.dbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);margin-inline:-16px;padding:8px 12px;
+  border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+.iconbtn{height:40px;min-width:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  cursor:pointer;font:600 15px var(--body);display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px}
+.iconbtn:disabled{opacity:.35;cursor:default}
+.dtitle{text-align:center;min-width:0}
+.dtitle .nm{font-family:var(--display);font-size:22px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dtitle .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pn{display:flex;gap:6px}
+.detail{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.counter{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:12px;box-shadow:var(--shadow)}
+.counter button{height:64px;border-radius:12px;border:0;cursor:pointer;font:600 30px/1 var(--body);touch-action:manipulation}
+.minus{background:var(--surface-2);color:var(--ink)}
+.plus{background:var(--accent);color:var(--accent-ink);box-shadow:0 6px 18px -6px var(--accent)}
+.counter button:disabled{opacity:.35;cursor:default;box-shadow:none}
+.now{text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.now .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.now .num{font-family:var(--mono);font-weight:600;font-size:40px;line-height:1.05;font-variant-numeric:tabular-nums}
+.now .num.word{font-size:26px}
+.now .num small{font-size:16px;color:var(--muted);font-weight:500}
+.now .side{font-size:12px;color:var(--muted)}
+.task{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:3px}
+.task.shape{border-left-color:var(--shape)}
+.task .t-lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.task.shape .t-lbl{color:var(--shape)}
+.task p{margin:0;font-size:15px;max-width:62ch}
+.sts{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.phead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.phead h3{margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.zoom{display:flex;gap:6px;align-items:center}
+.zoom .iconbtn{height:34px;min-width:34px;font-size:18px}
+.zoom .z{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:38px;text-align:center}
+.chartbox{height:min(62vh,560px);overflow:auto;background:var(--chart-bg);position:relative;overscroll-behavior:contain;touch-action:pan-x pan-y}
+.chartinner{position:relative;margin:0 auto}
+.chartinner img{display:block;width:100%;height:auto;max-width:none;user-select:none;-webkit-user-drag:none}
+.hl{position:absolute;left:0;right:0;background:var(--hl);outline:2px solid var(--hl-edge);pointer-events:none;transition:top .15s,height .15s}
+.hl .dir{position:absolute;top:50%;transform:translateY(-50%);background:var(--hl-edge);color:#fff;font:700 11px/1 var(--mono);padding:3px 5px;border-radius:4px;white-space:nowrap}
+.pastwash{position:absolute;left:0;right:0;bottom:0;background:var(--past);pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend img{width:16px;height:16px;border-radius:2px;background:#fff}
+.charthint{font-size:12px;color:var(--muted);padding:8px 12px 0}
+.nochart{padding:14px 12px;color:var(--muted);font-size:14px}
+
+.rows{max-height:340px;overflow-y:auto;position:relative;overscroll-behavior:contain}
+.row{display:grid;grid-template-columns:58px 1fr auto;gap:10px;align-items:baseline;padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.row:last-child{border-bottom:0}
+.row .rn{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .rn span{font-weight:500;color:var(--muted);font-size:11px;margin-left:3px}
+.row .rt{color:var(--muted);min-width:0}
+.row.shape .rt{color:var(--ink)}
+.row.shape .rn::before{content:"";display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--shape);margin-right:6px;vertical-align:1px}
+.row .rs{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.row.past{opacity:.5}
+.row.past .rn{text-decoration:line-through;text-decoration-color:var(--done)}
+.row.active{background:var(--accent);color:var(--accent-ink);opacity:1;position:sticky;top:0;bottom:0;z-index:1}
+.row.active .rt,.row.active .rs,.row.active .rn span{color:var(--accent-ink)}
+.row.active.shape .rn::before{background:var(--accent-ink)}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.key{display:flex;gap:14px;flex-wrap:wrap}
+.key span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;background:var(--shape)}
+.key span.a::before{background:var(--accent)}
+.link{background:none;border:0;color:var(--muted);font:500 13px var(--body);cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.confirm{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink)}
+.confirm button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 10px;font:600 13px var(--body);cursor:pointer}
+.confirm button.danger{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.opt{display:flex;align-items:center;gap:8px;font-size:14px;padding:12px}
+.opt input,.checklist input{accent-color:var(--accent);width:18px;height:18px}
+.checklist{list-style:none;margin:0;padding:0}
+.checklist li{border-top:1px solid var(--line)}
+.checklist label{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:12px;cursor:pointer;font-size:14px}
+.checklist input{margin:1px 0 0}
+.checklist input:checked + span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--done)}
+footer{margin-top:26px;color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;gap:4px}
+@media (max-width:420px){ .counter{grid-template-columns:56px 1fr 56px} .counter button{height:58px} .now .num{font-size:34px} .dtitle .nm{font-size:19px} }
+@media (prefers-reduced-motion: reduce){ .bar i,.hl{transition:none} }
+</style>
+
+<div class="wrap">
+  <div id="home">
+    <header class="top">
+      <div class="eyebrow">Row tracker · Size S</div>
+      <h1>Blair Cardigan</h1>
+      <div class="meta">
+        <span>Yarn <b>The Bling Bling Yarn, held double</b></span>
+        <span>Needles <b>6 mm / US 10</b></span>
+        <span>Gauge <b>16 sts × 20 rows = 10 cm</b></span>
+      </div>
+      <div class="sync" id="sync">Progress is saved on this device.</div>
+    </header>
+    <button class="resume" id="resume" type="button" hidden></button>
+    <div class="group-h">Pieces</div>
+    <div class="cards" id="cardsPieces"></div>
+    <div class="group-h">Bands &amp; finishing</div>
+    <div class="cards" id="cardsFinish"></div>
+    <footer>
+      <span>Odd rows are right-side rows, read right to left on the chart. Even rows are wrong-side rows, read left to right.</span>
+      <span>Gold rows have shaping or a stitch-count change.</span>
+    </footer>
+  </div>
+
+  <div id="detail" hidden>
+    <div class="dbar">
+      <button class="iconbtn" id="backBtn" type="button" aria-label="All pieces">‹ All</button>
+      <div class="dtitle"><div class="nm" id="dName"></div><div class="sub" id="dSub"></div></div>
+      <div class="pn"><button class="iconbtn" id="prevP" type="button" aria-label="Previous piece">‹</button><button class="iconbtn" id="nextP" type="button" aria-label="Next piece">›</button></div>
+    </div>
+    <div class="detail" id="dBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const CHARTS = {"back":{"src":"blair/back.png","w":1318,"h":1899,"lines":[1872.3,1854.0,1835.7,1817.3,1799.0,1780.7,1762.4,1744.1,1725.8,1707.5,1689.2,1670.9,1652.5,1634.2,1615.9,1597.6,1579.3,1561.0,1542.7,1524.4,1506.0,1487.7,1469.4,1451.1,1432.8,1414.5,1396.2,1377.9,1359.5,1341.2,1322.9,1304.6,1286.3,1268.0,1249.7,1231.4,1213.0,1194.7,1176.4,1158.1,1139.8,1121.5,1103.2,1084.9,1066.5,1048.2,1029.9,1011.6,993.3,975.0,956.7,938.4,920.0,901.7,883.4,865.1,846.8,828.5,810.2,791.9,773.5,755.2,736.9,718.6,700.3,682.0,663.7,645.4,627.0,608.7,590.4,572.1,553.8,535.5,517.2,498.9,480.5,462.2,443.9,425.6,407.3,389.0,370.7,352.4,334.0,315.7,297.4,279.1,260.8,242.5,224.2,205.9,187.6,169.2,150.9,132.6,114.3,96.0,77.7,59.4,41.1]},"rightFront":{"src":"blair/rightFront.png","w":527,"h":1775,"lines":[1749.3,1732.2,1715.1,1698.0,1680.9,1663.8,1646.7,1629.6,1612.5,1595.4,1578.3,1561.2,1544.1,1527.0,1509.9,1492.8,1475.7,1458.5,1441.4,1424.3,1407.2,1390.1,1373.0,1355.9,1338.8,1321.7,1304.6,1287.5,1270.4,1253.3,1236.2,1219.1,1202.0,1184.9,1167.8,1150.7,1133.6,1116.5,1099.4,1082.3,1065.2,1048.1,1031.0,1013.9,996.8,979.7,962.5,945.4,928.3,911.2,894.1,877.0,859.9,842.8,825.7,808.6,791.5,774.4,757.3,740.2,723.1,706.0,688.9,671.8,654.7,637.6,620.5,603.4,586.3,569.2,552.1,535.0,517.9,500.8,483.7,466.6,449.4,432.3,415.2,398.1,381.0,363.9,346.8,329.7,312.6,295.5,278.4,261.3,244.2,227.1,210.0,192.9,175.8,158.7,141.6,124.5,107.4,90.3,73.2,56.1,39.0]},"leftFront":{"src":"blair/leftFront.png","w":531,"h":1785,"lines":[1758.8,1741.7,1724.6,1707.5,1690.4,1673.3,1656.2,1639.0,1621.9,1604.8,1587.7,1570.6,1553.5,1536.4,1519.3,1502.2,1485.1,1468.0,1450.9,1433.8,1416.7,1399.6,1382.5,1365.4,1348.3,1331.2,1314.1,1297.0,1279.9,1262.8,1245.7,1228.6,1211.5,1194.4,1177.3,1160.2,1143.1,1126.0,1108.8,1091.7,1074.6,1057.5,1040.4,1023.3,1006.2,989.1,972.0,954.9,937.8,920.7,903.6,886.5,869.4,852.3,835.2,818.1,801.0,783.9,766.8,749.7,732.6,715.5,698.4,681.3,664.2,647.1,630.0,612.9,595.8,578.6,561.5,544.4,527.3,510.2,493.1,476.0,458.9,441.8,424.7,407.6,390.5,373.4,356.3,339.2,322.1,305.0,287.9,270.8,253.7,236.6,219.5,202.4,185.3,168.2,151.1,134.0,116.9,99.8,82.7,65.6,48.4]},"sleeve":{"src":"blair/sleeve.png","w":1111,"h":1048,"lines":[1020.2,1004.4,988.5,972.7,956.9,941.0,925.2,909.3,893.5,877.6,861.8,846.0,830.1,814.3,798.4,782.6,766.7,750.9,735.1,719.2,703.4,687.5,671.7,655.8,640.0,624.2,608.3,592.5,576.6,560.8,544.9,529.1,513.3,497.4,481.6,465.7,449.9,434.0,418.2,402.4,386.5,370.7,354.8,339.0,323.1,307.3,291.5,275.6,259.8,243.9,228.1,212.2,196.4,180.6,164.7,148.9,133.0,117.2,101.3,85.5,69.7,53.8,38.0]}};
+const BO = n => `Bind off ${n} stitches, then work the remaining stitches as they appear.`;
+const PIECES = [
+  { id:"back", name:"Back", rows:100, castOn:65, chart:"back", sub:"Cast on 65 · 100 rows",
+    notes:{ 63:{t:BO(3),s:62,shape:1}, 64:{t:BO(3),s:59,shape:1}, 71:{t:"Work in pattern with the chart decreases.",s:51,shape:1} },
+    ranges:[[1,62,"Follow the back chart."],[65,100,"Follow the back chart, including its decreases."]] },
+  { id:"leftFront", name:"Left Front", rows:100, castOn:28, chart:"leftFront", sub:"Cast on 28 · 100 rows",
+    notes:{ 63:{t:BO(3),s:25,shape:1}, 64:{t:"Work all stitches following the left front chart."},
+      71:{t:"Work in pattern with the chart decreases.",s:21,shape:1},
+      86:{t:BO(3)+" (neck)",s:18,shape:1}, 87:{t:"Work all stitches following the chart."},
+      88:{t:BO(2)+" (neck)",s:16,shape:1}, 89:{t:"Work all stitches following the chart."},
+      90:{t:BO(2)+" (neck)",s:14,shape:1}, 95:{t:"Work in pattern with the chart decreases.",s:11,shape:1} },
+    ranges:[[1,62,"Follow the left front chart."],[65,85,"Follow the chart, including its decreases."],[91,100,"Follow the chart."]] },
+  { id:"rightFront", name:"Right Front", rows:100, castOn:28, chart:"rightFront", sub:"Cast on 28 · 100 rows",
+    notes:{ 64:{t:BO(3),s:25,shape:1}, 71:{t:"Work in pattern with the chart decreases.",s:21,shape:1},
+      85:{t:"Bind off 3 stitches. *Work 3 stitches as they appear, yarn over, SKPO, work 3 stitches as they appear*. Repeat from * to * until 1 stitch is left and work it as it appears.",s:18,shape:1},
+      86:{t:"Work all stitches following the chart."}, 87:{t:BO(2)+" (neck)",s:16,shape:1}, 88:{t:"Work all stitches following the chart."},
+      89:{t:"Bind off 2 stitches. Work 6 stitches as they appear, yarn over, CDD, yarn over, work the remaining stitches as they appear.",s:14,shape:1},
+      90:{t:"Work all stitches following the chart."}, 95:{t:"Work in pattern with the chart decreases.",s:11,shape:1} },
+    ranges:[[1,63,"Follow the right front chart."],[65,84,"Follow the chart, including its decreases."],[91,100,"Follow the chart."]] },
+  { id:"sleeve1", name:"Sleeve 1", rows:62, castOn:33, chart:"sleeve", sub:"Cast on 33 · 62 rows",
+    notes:{ 21:{t:"Increase row: work the increases marked V on the chart.",s:65,shape:1},
+      33:{t:BO(3),s:62,shape:1}, 34:{t:BO(3),s:59,shape:1}, 41:{t:"Work in pattern with the chart decreases.",s:51,shape:1} },
+    ranges:[[1,20,"Follow the sleeve chart."],[22,32,"Follow the sleeve chart."],[35,62,"Follow the sleeve chart, including its decreases."]] },
+  { id:"sleeve2", name:"Sleeve 2", same:"sleeve1" },
+  { id:"rightBand", name:"Right Front Band", group:"finish", rows:12, sub:"Pick up 64 · 12 rows 1×1 rib",
+    castLabel:"Pick up", castOn:64, castText:"Pick up 1 stitch from each of the next 3 rows, skip 1 row. Repeat until 4 rows are left before row 84, then pick up 1 stitch from each of those 4 rows.",
+    notes:{6:{t:"Buttonhole row: work 5 stitches as they appear. *Yarn over, knit 2 together, work 13 stitches as they appear*. Repeat from * to * 2 more times, yarn over, knit 2 together, work the remaining stitches as they appear.",shape:1,button:1}},
+    ranges:[[1,12,"*Knit 1, purl 1*, repeat to the end of the row."]], endText:"Bind off all picked-up stitches." },
+  { id:"leftBand", name:"Left Front Band", group:"finish", rows:12, sub:"Pick up from row 84 · 12 rows 1×1 rib",
+    castLabel:"Pick up", castOn:64, castText:"Repeat the right band pick-up along the left front, beginning at row 84.",
+    notes:{}, ranges:[[1,12,"*Knit 1, purl 1*, repeat to the end of the row."]], endText:"Bind off all picked-up stitches." },
+  { id:"neckband", name:"Neckband", group:"finish", rows:12, sub:"Pick up 86 · 12 rows 1×1 rib",
+    castLabel:"Pick up", castOn:86,
+    castText:"From the right front edge: *pick up 1 stitch from each of the next 3 rows, skip 1 row* 3 times (9). Pick up 1 from each bound-off stitch and row to row 90 (11). Repeat * to * twice, then 1 from each of the next 2 rows (8). 1 from each back stitch (29). Repeat * to * twice, then 1 from each of the next 2 rows (8). 1 from each bound-off stitch and row to the left front edge (11). Repeat * to * twice and pick up 1 from each of the last 4 rows (10).",
+    notes:{5:{t:"Buttonhole row: work all stitches as they appear until 6 are left. Yarn over, knit 2 together, work the remaining stitches as they appear.",shape:1,button:1}},
+    ranges:[[1,12,"Work in 1×1 rib."]], endText:"Bind off all picked-up stitches." }
+];
+PIECES.forEach(p=>{ if(p.same){ const s=PIECES.find(q=>q.id===p.same); for(const k in s) if(!(k in p)) p[k]=s[k]; delete p.same; } });
+const FINISH = [
+  ["seamShoulders","Sew both shoulders: place front and back wrong sides together and sew 11 stitches on each side. Do this before the bands."],
+  ["setSleeves","Set in the first sleeve: sew front rows 63–92 to sleeve rows 33–62, the 3 bound-off front stitches, 3 shoulder-seam stitches, then 4 stitches from each of the next 8 back rows. Sew the rest of the armhole."],
+  ["secondSleeve","Repeat for the second sleeve, beginning at the back."],
+  ["sideSeams","Sew the side seams and the sleeve seams."],
+  ["ends","Knot and weave in the tails (about 8 cm / 3 in), then weave in all loose ends."],
+  ["buttons","If you made buttonholes, sew on the buttons."]
+];
+const ORDER = PIECES.map(p=>p.id).concat(["finishing"]);
+const LEGEND = [["knit","RS knit · WS purl"],["purl","RS purl · WS knit"],["inc","Increase 1 (M1)"],["yo","Yarn over"],["cdd","Center double decrease"],["k2tog","Knit 2 together"],["skpo","SKPO"]];
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- state ---------- */
+const KEY="blair-s-tracker-v1";
+let state={rows:{},checks:{},buttons:true,last:null,updatedAt:0};
+PIECES.forEach(p=>state.rows[p.id]=0);
+function merge(base,s){ return {rows:Object.assign({},base.rows,s.rows||{}),checks:Object.assign({},s.checks||{}),buttons:s.buttons!==undefined?!!s.buttons:true,last:s.last||base.last||null,updatedAt:s.updatedAt||0}; }
+try{ const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.rows) state=merge(state,s); }catch(e){}
+let zooms={}; try{ zooms=JSON.parse(localStorage.getItem(KEY+"-zoom")||"{}")||{}; }catch(e){}
+
+const side = r => r%2 ? "RS" : "WS";
+function rangeText(p,r){ for(const [a,b,t] of p.ranges) if(r>=a&&r<=b) return t; return "Work in pattern, following the chart."; }
+function rowInfo(p,r){
+  if(r===0) return {t:p.castText||`Cast on ${p.castOn} stitches double stranded.`,s:p.castOn,shape:1};
+  if(r===p.rows+1) return {t:p.endText||"Bind off all stitches.",shape:1};
+  const n=p.notes[r];
+  if(n){ if(n.button && !state.buttons) return {t:rangeText(p,r)}; return n; }
+  return {t:rangeText(p,r)};
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- home ---------- */
+function statusOf(p){ const c=state.rows[p.id],m=p.rows+1; return c===0?"Not started":c>=m?"Bind off":`Row ${c}`; }
+function renderHome(){
+  const mk=p=>{
+    const c=state.rows[p.id],m=p.rows+1,pct=Math.round(c/m*100);
+    const th=p.chart?`<div class="thumb" style="background-image:url('${CHARTS[p.chart].src}');background-position:center ${p.chart==="sleeve"?"40%":"30%"}"></div>`:"";
+    return `<button class="card${c>=m?" done":""}" type="button" data-go="${p.id}">
+      <div class="nm">${esc(p.name)}</div><div class="sub">${esc(p.sub)}</div>${th}
+      <div class="foot"><div class="rw"><span>${statusOf(p)}</span><span>${c>0&&c<m?"/ "+p.rows:(c>=m?"done":"")}</span></div><div class="bar"><i style="width:${pct}%"></i></div></div></button>`;
+  };
+  $("cardsPieces").innerHTML=PIECES.filter(p=>!p.group).map(mk).join("");
+  const done=FINISH.filter(([k])=>state.checks[k]).length;
+  $("cardsFinish").innerHTML=PIECES.filter(p=>p.group).map(mk).join("")+
+    `<button class="card${done===FINISH.length?" done":""}" type="button" data-go="finishing"><div class="nm">Finishing</div><div class="sub">Seams and final steps</div>
+     <div class="foot"><div class="rw"><span>${done} of ${FINISH.length} done</span><span></span></div><div class="bar"><i style="width:${Math.round(done/FINISH.length*100)}%"></i></div></div></button>`;
+  const lp=PIECES.find(p=>p.id===state.last);
+  const r=$("resume");
+  if(lp && state.rows[lp.id]>0 && state.rows[lp.id]<=lp.rows){
+    r.hidden=false; r.dataset.go=lp.id;
+    r.innerHTML=`<span class="k">Pick up where you left off</span><span class="n">${esc(lp.name)}</span><span class="r">Row ${state.rows[lp.id]} of ${lp.rows} · ${side(state.rows[lp.id])}</span><span class="go" aria-hidden="true">›</span>`;
+  } else r.hidden=true;
+}
+document.addEventListener("click",e=>{ const g=e.target.closest("[data-go]"); if(g) go(g.dataset.go); });
+
+/* ---------- routing ---------- */
+let cur=null, V={};
+function go(id){ if(location.hash!=="#"+id) location.hash=id; else route(); }
+function route(){
+  const id=location.hash.slice(1);
+  if(ORDER.includes(id)){ openDetail(id); }
+  else { cur=null; $("detail").hidden=true; $("home").hidden=false; renderHome(); }
+}
+window.addEventListener("hashchange",()=>{ route(); window.scrollTo(0,0); });
+$("backBtn").addEventListener("click",()=>{ history.length>1 && ORDER.includes(location.hash.slice(1)) ? (location.hash="") : route(); });
+$("prevP").addEventListener("click",()=>{ const i=ORDER.indexOf(cur); if(i>0) go(ORDER[i-1]); });
+$("nextP").addEventListener("click",()=>{ const i=ORDER.indexOf(cur); if(i<ORDER.length-1) go(ORDER[i+1]); });
+
+/* ---------- detail ---------- */
+function openDetail(id){
+  cur=id; $("home").hidden=true; $("detail").hidden=false;
+  const i=ORDER.indexOf(id); $("prevP").disabled=i<=0; $("nextP").disabled=i>=ORDER.length-1;
+  if(id==="finishing") return openFinishing();
+  const p=PIECES.find(x=>x.id===id);
+  if(state.last!==id){ state.last=id; save(); }
+  $("dName").textContent=p.name; $("dSub").textContent=p.sub;
+  const ch=p.chart?CHARTS[p.chart]:null;
+  $("dBody").innerHTML=`
+    <div class="counter">
+      <button class="minus" id="minus" type="button" aria-label="Previous row">−</button>
+      <div class="now" aria-live="polite"><span class="lbl" id="nLbl"></span><span class="num" id="nNum"></span><span class="side" id="nSide"></span></div>
+      <button class="plus" id="plus" type="button" aria-label="Next row">+</button>
+    </div>
+    <div class="bar"><i id="pBar"></i></div>
+    <div class="task" id="task"><span class="t-lbl" id="tLbl"></span><p id="tTxt"></p><span class="sts" id="tSts"></span></div>
+    <div class="panel">
+      <div class="phead"><h3>${ch?"Lace chart":"Chart"}</h3>${ch?`<div class="zoom"><button class="iconbtn" id="zOut" type="button" aria-label="Zoom out">−</button><span class="z" id="zVal"></span><button class="iconbtn" id="zIn" type="button" aria-label="Zoom in">+</button></div>`:""}</div>
+      ${ch?`<div class="charthint">Tap a row on the chart to jump to it.</div>
+        <div class="chartbox" id="cbox"><div class="chartinner" id="cin"><img id="cimg" src="${ch.src}" alt="${esc(p.name)} lace chart, size S" draggable="false"><div class="pastwash" id="pw"></div><div class="hl" id="hl"><span class="dir" id="hlDir"></span></div></div></div>
+        <div class="legend">${LEGEND.map(([k,t])=>`<span><img src="blair/icon-${k}.png" alt="">${t}</span>`).join("")}</div>`
+      :`<div class="nochart">This band is worked in 1×1 rib (knit 1, purl 1), so it has no chart.</div>`}
+    </div>
+    ${p.id==="rightBand"||p.id==="neckband"?`<div class="panel"><label class="opt"><input type="checkbox" id="btnOpt"> Adding buttons (show buttonhole row)</label></div>`:""}
+    <div class="panel">
+      <div class="phead"><h3>All rows</h3></div>
+      <div class="rows" id="rows" role="listbox" aria-label="${esc(p.name)} rows"></div>
+    </div>
+    <div class="tools"><div class="key"><span class="a">Current row</span><span>Shaping or count change</span></div><div id="rst"><button class="link" type="button">Reset this piece</button></div></div>`;
+  V={p,ch};
+  const list=$("rows");
+  V.rowEls=[];
+  for(let r=0;r<=p.rows+1;r++){ const d=document.createElement("div"); d.className="row"; d.setAttribute("role","option"); d.dataset.r=r; list.appendChild(d); V.rowEls.push(d); }
+  list.addEventListener("click",e=>{ const d=e.target.closest(".row"); if(d) setRow(+d.dataset.r); });
+  $("minus").onclick=()=>setRow(state.rows[p.id]-1);
+  $("plus").onclick=()=>setRow(state.rows[p.id]+1);
+  const bo=$("btnOpt"); if(bo){ bo.checked=!!state.buttons; bo.onchange=()=>{ state.buttons=bo.checked; renderDetail(true); save(); }; }
+  $("rst").onclick=e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.act==="yes"){ setRow(0); $("rst").innerHTML=`<button class="link" type="button">Reset this piece</button>`; }
+    else if(b.dataset.act==="no"){ $("rst").innerHTML=`<button class="link" type="button">Reset this piece</button>`; }
+    else $("rst").innerHTML=`<span class="confirm">Start ${esc(p.name)} over? <button type="button" class="danger" data-act="yes">Reset</button><button type="button" data-act="no">Cancel</button></span>`;
+  };
+  if(ch){
+    const box=$("cbox"), img=$("cimg");
+    const fit=()=>Math.max(0.1,(box.clientWidth-2)/ch.w);
+    V.fit=fit;
+    V.zoom = zooms[p.chart] || null;
+    const apply=(keepRow)=>{
+      const f=fit(); if(!V.zoom){ V.zoom=Math.max(f, Math.min(1, 9/ (ch.lines[0]-ch.lines[1]) )); }
+      V.zoom=Math.min(Math.max(V.zoom,f),2.5);
+      $("cin").style.width=(ch.w*V.zoom)+"px";
+      $("zVal").textContent=Math.round(V.zoom/f*100)+"%";
+      $("zOut").disabled=V.zoom<=f+0.001; $("zIn").disabled=V.zoom>=2.5;
+      if(keepRow) scrollChart(false); placeTag();
+    };
+    V.apply=apply;
+    $("zIn").onclick=()=>{ V.zoom=Math.min(2.5,V.zoom*1.35); zooms[p.chart]=V.zoom; try{localStorage.setItem(KEY+"-zoom",JSON.stringify(zooms));}catch(e){} apply(true); };
+    $("zOut").onclick=()=>{ V.zoom=Math.max(fit(),V.zoom/1.35); zooms[p.chart]=V.zoom; try{localStorage.setItem(KEY+"-zoom",JSON.stringify(zooms));}catch(e){} apply(true); };
+    $("cin").addEventListener("click",e=>{
+      const rect=$("cin").getBoundingClientRect(); const y=(e.clientY-rect.top)/rect.height*ch.h;
+      for(let r=1;r<=p.rows;r++){ if(y>=ch.lines[r] && y<ch.lines[r-1]){ setRow(r); return; } }
+    });
+    const ready=()=>{ apply(false); renderDetail(true); box.scrollLeft=(box.scrollWidth-box.clientWidth)/2; placeTag(); };
+    box.addEventListener("scroll",placeTag,{passive:true});
+    if(img.complete) ready(); else img.addEventListener("load",ready,{once:true});
+    window.onresize=()=>{ if(V.apply) V.apply(true); };
+  }
+  renderDetail(true);
+}
+
+function renderDetail(scroll){
+  const {p,ch}=V; if(!p) return;
+  const c=state.rows[p.id], m=p.rows+1, info=rowInfo(p,c);
+  $("minus").disabled=c<=0; $("plus").disabled=c>=m;
+  const num=$("nNum");
+  if(c===0){ $("nLbl").textContent="Start"; num.className="num word"; num.textContent=p.castLabel||"Cast on"; $("nSide").textContent=`${p.castOn} stitches`; }
+  else if(c===m){ $("nLbl").textContent="Last step"; num.className="num word"; num.textContent="Bind off"; $("nSide").textContent=`${p.rows} rows worked`; }
+  else { $("nLbl").textContent="Row"; num.className="num"; num.innerHTML=`${c}<small> / ${p.rows}</small>`; $("nSide").textContent=side(c)==="RS"?"Right side · chart right to left":"Wrong side · chart left to right"; }
+  $("task").classList.toggle("shape",!!info.shape);
+  $("tLbl").textContent=c===0?(p.castLabel||"Cast on"):c===m?"Bind off":(info.shape?"Shaping row":"This row");
+  $("tTxt").textContent=info.t;
+  $("tSts").textContent=info.s!=null?`${info.s} stitches after this ${c===0?"step":"row"}`:"";
+  $("pBar").style.width=Math.round(c/m*100)+"%";
+  V.rowEls.forEach((d,r)=>{
+    const ri=rowInfo(p,r), edge=r===0||r===m;
+    d.className="row"+(ri.shape?" shape":"")+(r<c?" past":"")+(r===c?" active":"");
+    d.setAttribute("aria-selected",r===c?"true":"false");
+    d.innerHTML=`<span class="rn">${edge?(r===0?"Start":"End"):r}${edge?"":`<span>${side(r)}</span>`}</span><span class="rt">${esc(ri.t)}</span><span class="rs">${ri.s!=null?ri.s+" sts":""}</span>`;
+  });
+  const a=V.rowEls[c], list=$("rows");
+  if(scroll!==false) list.scrollTop=Math.max(0,a.offsetTop-list.clientHeight/2+a.clientHeight/2);
+  if(ch){
+    const hl=$("hl"), pw=$("pw"), dir=$("hlDir");
+    let top,bot;
+    if(c===0){ top=ch.lines[0]-3; bot=ch.lines[0]+3; }
+    else if(c===m){ top=ch.lines[p.rows]-3; bot=ch.lines[p.rows]+3; }
+    else { top=ch.lines[c]; bot=ch.lines[c-1]; }
+    hl.style.top=(top/ch.h*100)+"%"; hl.style.height=((bot-top)/ch.h*100)+"%";
+    pw.style.top=(Math.min(bot,ch.lines[0])/ch.h*100)+"%";
+    pw.hidden = c<=1;
+    if(c>0&&c<m){ dir.hidden=false; dir.textContent=c%2===1?"← RS "+c:"WS "+c+" →"; placeTag(); }
+    else dir.hidden=true;
+    if(scroll!==false) scrollChart(scroll==="smooth");
+  }
+}
+function placeTag(){
+  const box=$("cbox"), dir=$("hlDir"); if(!box||!dir||dir.hidden) return;
+  const rs=state.rows[V.p.id]%2===1;
+  dir.style.right="auto";
+  dir.style.left=(rs? box.scrollLeft+box.clientWidth-dir.offsetWidth-6 : box.scrollLeft+6)+"px";
+}
+function scrollChart(smooth){
+  const {p,ch}=V; if(!ch) return;
+  const box=$("cbox"), cin=$("cin"); if(!box||!cin) return;
+  const c=Math.min(Math.max(state.rows[p.id],1),p.rows);
+  const y=((ch.lines[c]+ch.lines[c-1])/2)/ch.h*cin.offsetHeight;
+  const t=Math.max(0,y-box.clientHeight*0.6);
+  if(smooth&&!reduce) box.scrollTo({top:t,behavior:"smooth"}); else box.scrollTop=t;
+}
+function setRow(r){
+  const p=V.p; r=Math.max(0,Math.min(p.rows+1,r));
+  if(r===state.rows[p.id]) return;
+  state.rows[p.id]=r; state.last=p.id; renderDetail("smooth"); save();
+}
+document.addEventListener("keydown",e=>{
+  if(!V.p || $("detail").hidden || e.target.matches("input,textarea")) return;
+  if(e.key==="+"||e.key==="="||e.key==="ArrowRight"){ e.preventDefault(); setRow(state.rows[V.p.id]+1); }
+  if(e.key==="-"||e.key==="ArrowLeft"){ e.preventDefault(); setRow(state.rows[V.p.id]-1); }
+});
+
+function openFinishing(){
+  V={}; $("dName").textContent="Finishing"; $("dSub").textContent="Seams and final steps";
+  $("dBody").innerHTML=`<div class="panel"><div class="phead"><h3>Before you seam</h3></div>
+      <label class="opt"><input type="checkbox" id="btnOpt2"> Adding buttons (shows buttonhole rows on the bands)</label></div>
+    <div class="panel"><div class="phead"><h3>Steps</h3><span class="sts" id="finCount"></span></div>
+      <ul class="checklist">${FINISH.map(([k,t])=>`<li><label><input type="checkbox" id="chk-${k}" data-k="${k}"><span>${esc(t)}</span></label></li>`).join("")}</ul></div>`;
+  const upd=()=>{ $("btnOpt2").checked=!!state.buttons; FINISH.forEach(([k])=>{ $("chk-"+k).checked=!!state.checks[k]; }); $("finCount").textContent=`${FINISH.filter(([k])=>state.checks[k]).length} of ${FINISH.length}`; };
+  V.renderFinish=upd; upd();
+  $("dBody").onchange=e=>{ const t=e.target; if(t.id==="btnOpt2") state.buttons=t.checked; else if(t.dataset.k) state.checks[t.dataset.k]=t.checked; upd(); save(); };
+}
+
+/* ---------- persistence ---------- */
+let ref=null,timer=null,writing=false,dirty=false;
+const syncEl=$("sync");
+function save(){
+  state.updatedAt=Date.now();
+  try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
+  if(!ref) return; dirty=true; clearTimeout(timer); timer=setTimeout(flush,700);
+}
+async function flush(){
+  if(!ref||writing||!dirty) return; writing=true; dirty=false;
+  try{ await ref.set(JSON.parse(JSON.stringify(state))); syncEl.textContent="Progress is saved and syncs across your devices."; }
+  catch(err){ if(err&&err.code==="unavailable"){ dirty=true; setTimeout(flush,1500+Math.random()*1000); } else { syncEl.textContent="Progress is saved on this device only."; ref=null; } }
+  writing=false; if(dirty) flush();
+}
+function refresh(){ if(cur===null) renderHome(); else if(cur==="finishing"){ V.renderFinish&&V.renderFinish(); } else renderDetail(false); }
+
+route();
+(async function(){
+  try{
+    if(!window.claude||!claude.use) return;
+    const db=await claude.use("db"); if(!db) return;
+    ref=db.doc("progress/blair-s"); let first=true;
+    ref.onSnapshot(snap=>{
+      const d=snap.exists?snap.data():null;
+      if(d && (d.updatedAt||0)>(state.updatedAt||0) && !dirty && !writing){
+        state=merge(state,d); try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} refresh();
+      } else if(first && state.updatedAt && (!d || state.updatedAt>(d.updatedAt||0))){ dirty=true; flush(); }
+      first=false; syncEl.textContent="Progress is saved and syncs across your devices.";
+    },()=>{ ref=null; syncEl.textContent="Progress is saved on this device only."; });
+  }catch(e){}
+})();
+
+let lock=null;
+async function wake(){ try{ if("wakeLock" in navigator&&document.visibilityState==="visible") lock=await navigator.wakeLock.request("screen"); }catch(e){} }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") wake(); });
+document.addEventListener("pointerdown",function once(){ wake(); document.removeEventListener("pointerdown",once); });
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+</script>
+
+</body></html>
