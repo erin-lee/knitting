@@ -1,0 +1,421 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>My Go-To Vest Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#EFEDEA; --surface:#FFFFFF; --surface-2:#F6F4F1; --ink:#26211D; --ink-2:#6B625A; --line:#DAD5CF;
+  --accent:#4E3B2E; --accent-ink:#FFFFFF; --accent-soft:#F1E9E1;
+  --shape:#2C6970; --shape-soft:#DCEBEC; --sil:#E3DED8; --done:#BCA792; --band:#4E3B2E;
+  --display:"Anton","Oswald","Arial Narrow",Impact,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#171412; --surface:#221E1B; --surface-2:#2A2521; --ink:#EEE7E0; --ink-2:#A99E93; --line:#3A332E;
+    --accent:#D8BB9D; --accent-ink:#1E1813; --accent-soft:#3A3029;
+    --shape:#86C2C8; --shape-soft:#1E3335; --sil:#35302B; --done:#7F6C5A; --band:#D8BB9D;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#171412; --surface:#221E1B; --surface-2:#2A2521; --ink:#EEE7E0; --ink-2:#A99E93; --line:#3A332E;
+  --accent:#D8BB9D; --accent-ink:#1E1813; --accent-soft:#3A3029;
+  --shape:#86C2C8; --shape-soft:#1E3335; --sil:#35302B; --done:#7F6C5A; --band:#D8BB9D;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+#app{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--shape);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{text-wrap:balance;margin:0}
+
+/* home */
+.hero{padding-block:28px 12px;display:grid;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+.hero h1{font-family:var(--display);font-weight:400;font-size:clamp(44px,12vw,72px);line-height:.95;letter-spacing:.01em;text-transform:uppercase}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px;margin-top:14px;padding:14px 16px;background:var(--surface);border-radius:14px;border:1px solid var(--line)}
+.meta div{display:grid;gap:1px}
+.meta span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+.meta b{font-weight:600;font-size:14px}
+.sync{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;margin-top:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink-2)}
+.dot.ok{background:var(--shape)}
+.resume{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-top:16px;padding:16px 18px;border:0;border-radius:16px;background:var(--accent);color:var(--accent-ink);text-align:left}
+.resume small{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.8;font-weight:600}
+.resume strong{font-size:18px;font-weight:700}
+.resume .arrow{font-size:26px}
+.group-title{margin:26px 0 10px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.card{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);text-align:left;width:100%}
+.card .thumb{width:64px;height:78px}
+.card h3{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.02em;text-transform:uppercase;line-height:1.05}
+.card .sub{font-size:13px;color:var(--ink-2)}
+.card .prog{display:flex;justify-content:space-between;font-size:13px;margin-top:8px;color:var(--ink-2)}
+.bar{height:6px;border-radius:3px;background:var(--sil);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.card.done .bar i{background:var(--shape)}
+
+/* detail */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-block:10px;background:var(--bg);margin-inline:-16px;padding-inline:16px;border-bottom:1px solid var(--line)}
+.top .back{border:0;background:none;font-weight:600;padding:8px 4px;font-size:16px}
+.top .nav{display:flex;gap:6px}
+.top .nav button{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:20px}
+.top .nav button:disabled{opacity:.35;cursor:default}
+.phead{padding-block:18px 6px}
+.phead h2{font-family:var(--display);font-weight:400;font-size:clamp(40px,11vw,60px);line-height:.95;text-transform:uppercase;letter-spacing:.01em}
+.phead p{margin:6px 0 0;color:var(--ink-2);font-size:14px}
+
+.counter{display:grid;grid-template-columns:72px 1fr 112px;gap:12px;align-items:center;margin-top:14px}
+.counter .minus{height:72px;border-radius:18px;border:1.5px solid var(--line);background:var(--surface);font-size:34px;line-height:1}
+.counter .plus{height:112px;border-radius:24px;border:0;background:var(--accent);color:var(--accent-ink);font-size:56px;line-height:1;box-shadow:0 6px 18px -8px var(--accent)}
+.counter .plus:active,.counter .minus:active{transform:scale(.97)}
+.counter button:disabled{opacity:.35}
+.readout{text-align:center}
+.readout .lab{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:700}
+.readout .num{font-family:var(--mono);font-weight:600;font-size:56px;line-height:1.05;font-variant-numeric:tabular-nums}
+.readout .num small{font-size:20px;color:var(--ink-2);font-weight:500}
+.side{display:inline-block;margin-top:4px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.08em;background:var(--surface-2);border:1px solid var(--line)}
+
+.rowcard{margin-top:16px;padding:16px 18px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.rowcard.shape{background:var(--shape-soft);border-color:var(--shape)}
+.rowcard.cue{border-color:var(--accent);border-width:2px}
+.rowcard .k{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--ink-2);display:flex;justify-content:space-between;gap:8px}
+.rowcard.shape .k .tag{color:var(--shape)}
+.rowcard .t{font-size:20px;font-weight:600;line-height:1.35;margin-top:6px}
+.rowcard ol{margin:8px 0 0;padding-left:22px;display:grid;gap:6px;font-size:16px}
+.rowcard .sts{margin-top:12px;display:flex;align-items:baseline;gap:8px;color:var(--ink-2);font-size:14px}
+.rowcard .sts b{font-family:var(--mono);font-size:26px;color:var(--ink);font-weight:600}
+.rowcard.shape .sts b{color:var(--shape)}
+
+.panel{margin-top:16px;padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.panel h4{margin:0 0 10px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.schem{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.schem figure{margin:0;display:grid;gap:4px;justify-items:center}
+.schem figcaption{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);font-weight:700}
+.schem svg{width:100%;max-width:220px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+
+.adjust{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.adjust .btns{display:flex;gap:6px}
+.adjust button{min-width:52px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);font-weight:600}
+.adjust p{margin:0;font-size:14px;color:var(--ink-2);flex:1 1 220px}
+.adjust p b{color:var(--ink)}
+
+.rows{max-height:360px;overflow:auto;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);overscroll-behavior:contain}
+.r{display:grid;grid-template-columns:62px 1fr 38px;gap:10px;align-items:start;width:100%;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left;font-size:14px}
+.r .n{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.r .n small{display:block;font-size:10px;letter-spacing:.08em;color:var(--ink-2);font-weight:500}
+.r .s{font-family:var(--mono);text-align:right;color:var(--ink-2)}
+.r.shape .n{color:var(--shape)}
+.r.past{opacity:.45}
+.r.past .x{text-decoration:line-through}
+.r.active{position:sticky;top:0;bottom:0;z-index:1;background:var(--accent);color:var(--accent-ink);opacity:1}
+.r.active .n,.r.active .s,.r.active .n small{color:var(--accent-ink)}
+
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;align-items:center;flex-wrap:wrap}
+.ghost{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px}
+.danger{border:0;background:#A33B2B;color:#fff;border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px}
+.foot span{font-size:14px;color:var(--ink-2)}
+.hint{font-size:12px;color:var(--ink-2);margin-top:10px;text-align:center}
+
+.checks{display:grid;gap:10px;margin-top:16px}
+.check{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);text-align:left;width:100%}
+.box{width:30px;height:30px;border-radius:8px;border:2px solid var(--ink-2);display:grid;place-items:center;font-size:18px;font-weight:700}
+.check.on .box{background:var(--shape);border-color:var(--shape);color:var(--surface)}
+.check.on .ct{color:var(--ink-2);text-decoration:line-through}
+.check small{display:block;margin-top:2px;font-size:12px;color:var(--ink-2);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media (min-width:700px){.counter{grid-template-columns:88px 1fr 140px}.counter .plus{height:120px}}
+</style>
+
+<div id="app"></div>
+
+<script>
+(function(){
+'use strict';
+var SLUG='my-go-to-vest', LS_KEY='pattern-tracker:'+SLUG;
+
+/* ---------- pattern data: Size 1 ---------- */
+var DEC_RS='K1tbl, SSK, knit to last 3 sts, K2tog, Sl1p.';
+var PLAIN_RS='K1tbl, knit to last st, Sl1p.';
+var PLAIN_WS='K1tbl, purl to last st, Sl1p.';
+
+function bodyRows(){return 38+S.bodyExtra}
+
+var PIECES=[
+ {id:'body',name:'Body',round:true,castOn:96,castLabel:'Cast on',sub:'In the round · rib, then stockinette',
+  castText:'Long-tail cast on 96 sts on the 5.5 mm (US 9) circular, plus 1 extra st to join in the round. Place a marker at the start of the round.',
+  endText:'Body done. Keep all 96 sts on the needle. Next, work the back flat over the first 48 sts.',
+  gen:function(){var B=bodyRows(),a=[];for(var r=1;r<=B;r++){
+    if(r<=18)a[r]={t:r===1?'Start 1×1 rib: *K1, P1* around.':'1×1 rib: *K1, P1* around.',s:96};
+    else if(r===19)a[r]={t:'Needle switch! Change to the 6.5 mm (US 10½) circular and knit every stitch from here.',s:96,cue:1};
+    else a[r]={t:'Knit every stitch (stockinette).',s:96};
+    if(r===B&&r>19)a[r]={t:'Knit every stitch. Last body round. Try it on first: the body should end about 2.5 in below your underarm.',s:96,cue:1};
+  }return a}},
+ {id:'back',name:'Back',castOn:48,castLabel:'Work over',sub:'Flat · armhole shaping, 42 rows',
+  castText:'Work flat over the first 48 sts of the round, RS facing. Leave the other 48 sts on the cord for the front.',
+  endText:'Cut the yarn. Slip the 40 back sts onto scrap yarn or a spare needle.',
+  gen:function(){var a=[],s=48;for(var r=1;r<=42;r++){
+    if(r===1){s=46;a[r]={t:'K1tbl, SSK, K42, K2tog, Sl1p. Turn and work back over these sts only.',s:s,shape:1}}
+    else if(r<=7&&r%2){s-=2;a[r]={t:DEC_RS,s:s,shape:1}}
+    else a[r]={t:r%2?PLAIN_RS:PLAIN_WS,s:s};
+  }return a}},
+ {id:'front',name:'Front',castOn:48,castLabel:'Rejoin to',sub:'Flat · armhole shaping, 33 rows',
+  castText:'Rejoin yarn to the 48 sts waiting on the cord, RS facing. You can switch to the 5.5 mm needles if it’s easier.',
+  endText:'Next, the left shoulder on the 14 sts you just turned on (WS facing). The other 25 sts wait on the cord.',
+  gen:function(){var a=[],s=48;for(var r=1;r<=33;r++){
+    if(r<=7&&r%2){s-=2;a[r]={t:DEC_RS,s:s,shape:1}}
+    else if(r===33){s=14;a[r]={t:'K1tbl, K12, K2tog. Turn and work back over these 14 sts only. Leave the other 25 sts on the cord.',s:14,shape:1}}
+    else a[r]={t:r%2?PLAIN_RS:PLAIN_WS,s:s};
+  }return a}},
+ {id:'leftShoulder',name:'Left shoulder',castOn:14,castLabel:'Continue on',firstWS:true,sub:'Flat · neck shaping, 9 rows',
+  castText:'Continue on the 14 sts you just turned on. The WS is facing you.',
+  endText:'3-needle bind off: place the back and the left front shoulder right sides together. Starting at the armhole edge, bind off 10 sts from each piece. Cut the yarn and secure the last stitch. Then move the next 10 front sts (the front centre) onto scrap yarn.',
+  gen:function(){var a=[],s=14;for(var r=1;r<=9;r++){
+    if(r%2===0){s--;a[r]={t:'K1tbl, knit to last 2 sts, K2tog.',s:s,shape:1}}
+    else a[r]={t:'Sl1p, purl to last st, Sl1p.',s:s};
+  }return a}},
+ {id:'rightShoulder',name:'Right shoulder',castOn:15,castLabel:'Rejoin to',sub:'Flat · neck shaping, 10 rows',
+  castText:'Rejoin yarn to the remaining 15 front sts, RS facing.',
+  endText:'Move the next 20 back sts (the back centre) onto scrap yarn. Place the back and the right front shoulder right sides together. Starting at the neck edge, 3-needle bind off 10 sts from each piece. Cut the yarn and secure. Turn the vest right side out!',
+  gen:function(){var a=[],s=15;for(var r=1;r<=10;r++){
+    if(r%2){s--;a[r]={t:'SSK, knit to last st, Sl1p.',s:s,shape:1}}
+    else a[r]={t:PLAIN_WS,s:s};
+  }return a}},
+ {id:'collar',name:'Collar',round:true,castOn:68,castLabel:'Pick up',group:'finish',sub:'In the round · 1×1 rib, 22–26 rounds',
+  castSteps:['Put the 10 front centre sts and 20 back centre sts onto the 5.5 mm circular, starting with the left side of the front sts.',
+    'Starting at the left shoulder seam, pick up 10 sts evenly down the front left neckline.',
+    'Front centre 10 sts: K2, then (M1, K1) to the end of these sts (18 sts).',
+    'Pick up 10 sts evenly up the front right neckline.',
+    'Pick up 2 sts along the back right neckline.',
+    'Back centre 20 sts: K2, (M1, K3) ×2, M1, K4, (M1, K3) ×2, M1, K2 (26 sts).',
+    'Pick up 2 sts along the back left neckline.',
+    'You have 68 sts. Place a marker and join in the round.'],
+  endText:'Cast off loosely in rib.',
+  gen:function(){var a=[];for(var r=1;r<=26;r++){
+    a[r]={t:'1×1 rib: *K1, P1* around.',s:68};
+    if(r===22)a[r]={t:'1×1 rib: *K1, P1* around. Minimum collar length. Bind off after any round from here once it’s the length you want (fold it in half to check).',s:68,cue:1};
+  }return a}}
+];
+var BYID={};PIECES.forEach(function(p){BYID[p.id]=p});
+var ORDER=['body','back','front','leftShoulder','rightShoulder','collar','finish'];
+var CHECKS=[
+ {id:'sew',t:'Fold the collar in half to the inside and loosely whip-stitch the cast-off edge to the pick-up line.',opt:1},
+ {id:'ends',t:'Weave in all the loose ends with a darning needle.'},
+ {id:'block',t:'Block the vest.'}
+];
+function rowsOf(p){return p.id==='body'?bodyRows():p.gen().length-1}
+
+/* ---------- state + persistence ---------- */
+var S={rows:{},checks:{},bodyExtra:0,last:null,updatedAt:0};
+try{var raw=localStorage.getItem(LS_KEY);if(raw){var o=JSON.parse(raw);if(o&&typeof o==='object')S=Object.assign(S,o)}}catch(e){}
+var ref=null,pending=false,writing=false,again=false,timer=null,sync='Connecting…',syncOk=false;
+function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(S))}catch(e){}}
+function snapshot(){return JSON.parse(JSON.stringify(S))}
+function changed(){S.updatedAt=Date.now();saveLocal();pending=true;clearTimeout(timer);timer=setTimeout(flush,700)}
+function flush(){
+  if(!ref){pending=false;return}
+  if(writing){again=true;return}
+  writing=true;var body=snapshot();
+  var attempt=function(n){return ref.set(body).catch(function(e){
+    if(n===0&&e&&(e.code==='unavailable'||!e.code))return new Promise(function(r){setTimeout(r,800+Math.random()*600)}).then(function(){return attempt(1)});
+    throw e})};
+  attempt(0).then(function(){setSync('Saved and synced across your devices',true)})
+   .catch(function(){setSync('Saved on this device. Sync will retry on your next change.',false)})
+   .then(function(){writing=false;if(again){again=false;flush()}else pending=false});
+}
+function setSync(t,ok){sync=t;syncOk=ok;var el=document.getElementById('sync');if(el)el.innerHTML=syncHTML()}
+function syncHTML(){return '<i class="dot'+(syncOk?' ok':'')+'"></i>'+esc(sync)}
+var useP=(window.claude&&window.claude.use)?window.claude.use('db'):Promise.resolve(null);
+Promise.resolve(useP).then(function(db){
+  if(!db){setSync('Saved on this device only (sync isn’t available here)',false);return}
+  ref=db.doc('progress/'+SLUG);
+  ref.onSnapshot(function(snap){
+    if(!snap.exists){ if(S.updatedAt){pending=true;flush()} else setSync('Synced. Progress saves automatically.',true); return}
+    var d=snap.data()||{};
+    if((d.updatedAt||0)>(S.updatedAt||0)&&!pending&&!writing){
+      S=Object.assign({rows:{},checks:{},bodyExtra:0,last:null,updatedAt:0},JSON.parse(JSON.stringify(d)));saveLocal();render();
+    } else if((S.updatedAt||0)>(d.updatedAt||0)&&!pending&&!writing){pending=true;flush()}
+    setSync('Saved and synced across your devices',true);
+  },function(){setSync('Saved on this device. Sync is offline for now.',false)});
+}).catch(function(){setSync('Saved on this device only',false)});
+
+/* wake lock */
+var lock=null;
+function wake(){try{if(navigator.wakeLock&&document.visibilityState==='visible'&&!lock)navigator.wakeLock.request('screen').then(function(l){lock=l;l.addEventListener('release',function(){lock=null})}).catch(function(){})}catch(e){}}
+document.addEventListener('pointerdown',wake,{once:true});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&lock===null&&S.last)wake()});
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function val(p){var v=S.rows[p.id]||0,max=rowsOf(p)+1;return Math.max(0,Math.min(max,v))}
+function side(p,n){if(p.round)return 'Round';var rs=(n%2===1)!==!!p.firstWS;return rs?'RS':'WS'}
+function unit(p){return p.round?'Round':'Row'}
+function stsAt(p,n){var g=p.gen();if(n<=0)return p.castOn;if(n>rowsOf(p))return g[rowsOf(p)].s;return g[n].s}
+function progressText(p){var v=val(p),R=rowsOf(p);if(v===0)return 'Not started';if(v>R)return 'Done';return unit(p)+' '+v+' / '+R}
+function frac(p){var v=val(p),R=rowsOf(p);return v>R?1:Math.max(0,(v-1)/R)}
+function finishDone(){return CHECKS.filter(function(c){return S.checks[c.id]}).length}
+
+/* ---------- schematic ---------- */
+function geo(){var B=bodyRows();return {B:B,top:B+55}}
+function pt(g,x,r){return (x+26).toFixed(1)+','+((g.top-r)*0.7+2).toFixed(1)}
+function poly(g,pts){return pts.map(function(q){return pt(g,q[0],q[1])}).join(' ')}
+function regions(g){var B=g.B;return{
+  front:{
+    outline:[[-24,0],[24,0],[24,B],[20,B+8],[20,B+42],[10,B+42],[5,B+33],[-5,B+33],[-10,B+43],[-20,B+43],[-20,B+8],[-24,B]],
+    collar:[[-10,B+43],[-5,B+33],[5,B+33],[10,B+42],[11,B+54],[-11,B+54]],
+    parts:{
+      body:{p:[[-24,0],[24,0],[24,B],[-24,B]],lo:0,hi:B},
+      front:{p:[[24,B],[20,B+8],[20,B+33],[-20,B+33],[-20,B+8],[-24,B]],lo:B,hi:B+33},
+      leftShoulder:{p:[[20,B+33],[20,B+42],[10,B+42],[5,B+33]],lo:B+33,hi:B+42},
+      rightShoulder:{p:[[-5,B+33],[-10,B+43],[-20,B+43],[-20,B+33]],lo:B+33,hi:B+43},
+      collar:{p:[[-10,B+43],[-5,B+33],[5,B+33],[10,B+42],[11,B+54],[-11,B+54]],lo:B+33,hi:B+54}
+    }},
+  back:{
+    outline:[[-24,0],[24,0],[24,B],[20,B+7],[20,B+42],[-20,B+42],[-20,B+7],[-24,B]],
+    collar:[[-10,B+42],[10,B+42],[11,B+54],[-11,B+54]],
+    parts:{
+      body:{p:[[-24,0],[24,0],[24,B],[-24,B]],lo:0,hi:B},
+      back:{p:[[24,B],[20,B+7],[20,B+42],[-20,B+42],[-20,B+7],[-24,B]],lo:B,hi:B+42},
+      collar:{p:[[-10,B+42],[10,B+42],[11,B+54],[-11,B+54]],lo:B+42,hi:B+54}
+    }}
+}}
+var clipN=0;
+function vestSVG(view,activeId,small){
+  var g=geo(),rg=regions(g)[view],H=(g.top*0.7+4).toFixed(1),out='';
+  out+='<svg viewBox="0 0 52 '+H+'" role="img" aria-label="'+view+' schematic">';
+  out+='<polygon points="'+poly(g,rg.outline)+'" fill="var(--sil)"/>';
+  out+='<polygon points="'+poly(g,rg.collar)+'" fill="var(--sil)"/>';
+  Object.keys(rg.parts).forEach(function(id){
+    var part=rg.parts[id],p=BYID[id],v=val(p),R=rowsOf(p),isA=id===activeId;
+    var cid='c'+(++clipN);
+    out+='<clipPath id="'+cid+'"><polygon points="'+poly(g,part.p)+'"/></clipPath>';
+    if(isA)out+='<polygon points="'+poly(g,part.p)+'" fill="var(--accent-soft)"/>';
+    var doneRows=v>R?R:Math.max(0,v-1);
+    if(doneRows>0){
+      var yHi=part.lo+(part.hi-part.lo)*doneRows/R;
+      out+='<rect clip-path="url(#'+cid+')" x="0" y="'+((g.top-yHi)*0.7+2).toFixed(2)+'" width="52" height="'+(((yHi-part.lo)*0.7)+0.05).toFixed(2)+'" fill="var(--done)" opacity="'+(isA?0.95:0.7)+'"/>';
+    }
+    if(isA&&v>=1&&v<=R){
+      var y0=part.lo+(part.hi-part.lo)*(v-1)/R,y1=part.lo+(part.hi-part.lo)*v/R;
+      out+='<rect clip-path="url(#'+cid+')" x="0" y="'+((g.top-y1)*0.7+2).toFixed(2)+'" width="52" height="'+Math.max(0.9,(y1-y0)*0.7).toFixed(2)+'" fill="var(--band)"/>';
+    }
+    if(isA)out+='<polygon points="'+poly(g,part.p)+'" fill="none" stroke="var(--accent)" stroke-width="'+(small?1.2:0.7)+'" stroke-linejoin="round"/>';
+  });
+  out+='<polygon points="'+poly(g,rg.outline)+'" fill="none" stroke="var(--ink-2)" stroke-width="'+(small?0.8:0.45)+'" stroke-linejoin="round"/>';
+  out+='<polygon points="'+poly(g,rg.collar)+'" fill="none" stroke="var(--ink-2)" stroke-width="'+(small?0.8:0.45)+'" stroke-linejoin="round"/>';
+  if(!small){var yb=(g.top-18)*0.7+2;out+='<line x1="2" x2="50" y1="'+yb.toFixed(1)+'" y2="'+yb.toFixed(1)+'" stroke="var(--ink-2)" stroke-width=".3" stroke-dasharray="1 1"/>';}
+  return out+'</svg>';
+}
+
+/* ---------- views ---------- */
+var app=document.getElementById('app'),confirmReset=false;
+function route(){return (location.hash||'').replace('#','')}
+function go(id){confirmReset=false;if(id){if(location.hash!=='#'+id)location.hash=id;else render()}else{history.replaceState(null,'',location.pathname+location.search);render()}window.scrollTo(0,0)}
+window.addEventListener('hashchange',function(){confirmReset=false;render();window.scrollTo(0,0)});
+
+function card(p){
+  var v=val(p),R=rowsOf(p),done=v>R;
+  var view=p.id==='back'?'back':'front';
+  return '<button class="card'+(done?' done':'')+'" data-go="'+p.id+'"><div class="thumb">'+vestSVG(view,p.id,true)+'</div><div>'+
+   '<h3>'+esc(p.name)+'</h3><div class="sub">'+esc(p.castLabel)+' '+p.castOn+' sts · '+R+' '+unit(p).toLowerCase()+'s</div>'+
+   '<div class="prog"><span>'+progressText(p)+'</span><span class="mono">'+Math.round(frac(p)*100)+'%</span></div>'+
+   '<div class="bar"><i style="width:'+(frac(p)*100).toFixed(1)+'%"></i></div></div></button>';
+}
+function home(){
+  var last=S.last&&(BYID[S.last]||S.last==='finish')?S.last:null;
+  var h='<header class="hero"><div class="eyebrow">Brenda Lam · Size 1 · 27.5 in chest</div><h1>My Go&#8209;To Vest</h1>'+
+   '<div class="meta"><div><span>Yarn</span><b>3 balls chunky (100 m / 100 g)</b></div><div><span>Needles</span><b>5.5 mm & 6.5 mm circulars, 24 in+</b></div>'+
+   '<div><span>Gauge</span><b>14 sts × 20 rows = 4 in, st st on 6.5 mm</b></div></div>'+
+   '<div class="sync" id="sync">'+syncHTML()+'</div></header>';
+  if(last){var nm=last==='finish'?'Finishing':BYID[last].name,pt2=last==='finish'?finishDone()+' of '+CHECKS.length+' steps done':progressText(BYID[last]);
+    h+='<button class="resume" data-go="'+last+'"><span><small>Pick up where you left off</small><strong>'+esc(nm)+'</strong> · '+esc(pt2)+'</span><span class="arrow">›</span></button>'}
+  else h+='<button class="resume" data-go="body"><span><small>Ready when you are</small><strong>Start with the body</strong> · cast on 96</span><span class="arrow">›</span></button>';
+  h+='<div class="group-title">Knit from the bottom up</div><div class="cards">'+PIECES.filter(function(p){return !p.group}).map(card).join('')+'</div>';
+  h+='<div class="group-title">Collar & finishing</div><div class="cards">'+card(BYID.collar)+
+   '<button class="card" data-go="finish"><div class="thumb">'+vestSVG('front',null,true)+'</div><div><h3>Finishing</h3><div class="sub">Sew collar (optional) · ends · block</div>'+
+   '<div class="prog"><span>'+finishDone()+' of '+CHECKS.length+' done</span></div><div class="bar"><i style="width:'+(finishDone()/CHECKS.length*100)+'%"></i></div></div></button></div>';
+  app.innerHTML=h;
+}
+function topbar(id){
+  var i=ORDER.indexOf(id);
+  return '<div class="top"><button class="back" data-go="">‹ All pieces</button><div class="nav">'+
+   '<button aria-label="Previous piece" '+(i<=0?'disabled':'data-go="'+ORDER[i-1]+'"')+'>‹</button>'+
+   '<button aria-label="Next piece" '+(i>=ORDER.length-1?'disabled':'data-go="'+ORDER[i+1]+'"')+'>›</button></div></div>';
+}
+function detail(p){
+  var v=val(p),R=rowsOf(p),g=p.gen(),h=topbar(p.id);
+  h+='<div class="phead"><div class="eyebrow">'+(p.round?'In the round':'Worked flat')+'</div><h2>'+esc(p.name)+'</h2><p>'+esc(p.sub)+' · '+esc(p.castLabel)+' '+p.castOn+' sts</p></div>';
+  var lab,num,sd;
+  if(v===0){lab=p.castLabel;num='0';sd='Setup'}else if(v>R){lab='Finish';num='✓';sd='Done'}else{lab=unit(p);num=String(v);sd=side(p,v)}
+  h+='<div class="counter"><button class="minus" data-step="-1" aria-label="Previous '+unit(p).toLowerCase()+'" '+(v<=0?'disabled':'')+'>−</button>'+
+   '<div class="readout"><div class="lab">'+esc(lab)+'</div><div class="num">'+num+(v>=1&&v<=R?'<small> / '+R+'</small>':'')+'</div><span class="side">'+esc(sd)+'</span></div>'+
+   '<button class="plus" data-step="1" aria-label="Next '+unit(p).toLowerCase()+'" '+(v>R?'disabled':'')+'>+</button></div>';
+  // this row
+  var cls='rowcard',body='',kind='This '+unit(p).toLowerCase(),tag='';
+  if(v===0){kind=p.castLabel;body=p.castSteps?'<ol>'+p.castSteps.map(function(s){return '<li>'+esc(s)+'</li>'}).join('')+'</ol>':'<div class="t">'+esc(p.castText)+'</div>'}
+  else if(v>R){kind='Finish this piece';cls+=' cue';body='<div class="t">'+esc(p.endText)+'</div>'}
+  else{var ri=g[v];if(ri.shape){cls+=' shape';tag='Shaping'}else if(ri.cue){cls+=' cue';tag='Note'}body='<div class="t">'+esc(ri.t)+'</div>'}
+  var sts=v===0?p.castOn:stsAt(p,v);
+  h+='<div class="'+cls+'"><div class="k"><span>'+esc(kind)+'</span><span class="tag">'+tag+'</span></div>'+body+
+   '<div class="sts"><b>'+sts+'</b> sts '+(v===0?'to start':(v>R?'on the needle':'after this '+unit(p).toLowerCase()))+'</div></div>';
+  // body length
+  if(p.id==='body'){
+    h+='<div class="panel adjust"><p>Stockinette section: <b>'+(20+S.bodyExtra)+' rounds</b>'+(S.bodyExtra?' ('+(S.bodyExtra>0?'+':'')+S.bodyExtra+' vs. pattern)':' (pattern length)')+'. Add or remove 2 rounds at a time to lengthen or crop.</p>'+
+     '<div class="btns"><button data-len="-2" '+(S.bodyExtra<=-18?'disabled':'')+' aria-label="Remove 2 rounds">−2</button><button data-len="2" '+(S.bodyExtra>=30?'disabled':'')+' aria-label="Add 2 rounds">+2</button></div></div>';
+  }
+  // schematic
+  var views=p.id==='back'?['back','front']:(p.id==='body'||p.id==='collar'?['front','back']:['front','back']);
+  h+='<div class="panel"><h4>Where you are</h4><div class="schem">'+views.map(function(vw){return '<figure>'+vestSVG(vw,p.id,false)+'<figcaption>'+vw+'</figcaption></figure>'}).join('')+'</div>'+
+   '<div class="legend"><span><i style="background:var(--band)"></i>Current '+unit(p).toLowerCase()+'</span><span><i style="background:var(--done)"></i>Knitted</span><span><i style="background:var(--accent-soft);outline:1px solid var(--accent)"></i>This piece</span></div></div>';
+  // all rows
+  var list='<button class="r'+(v===0?' active':' past')+'" data-set="0"><span class="n">0<small>SETUP</small></span><span class="x">'+esc(p.castLabel)+' '+p.castOn+' sts</span><span class="s">'+p.castOn+'</span></button>';
+  for(var r=1;r<=R;r++){var ri2=g[r],c='r'+(ri2.shape?' shape':'')+(r<v?' past':'')+(r===v?' active':'');
+    list+='<button class="'+c+'" data-set="'+r+'"><span class="n">'+r+'<small>'+side(p,r).toUpperCase()+'</small></span><span class="x">'+esc(ri2.t)+'</span><span class="s">'+ri2.s+'</span></button>'}
+  list+='<button class="r'+(v>R?' active':'')+'" data-set="'+(R+1)+'"><span class="n">✓<small>FINISH</small></span><span class="x">'+esc(p.endText)+'</span><span class="s">'+stsAt(p,R)+'</span></button>';
+  h+='<div class="panel"><h4>All '+unit(p).toLowerCase()+'s · tap to jump</h4><div class="rows" id="rows">'+list+'</div></div>';
+  h+='<div class="foot">'+(confirmReset?'<span>Reset '+esc(p.name)+' to 0?</span><button class="ghost" data-reset="no">Cancel</button><button class="danger" data-reset="yes">Reset</button>':'<button class="ghost" data-reset="ask">Reset this piece</button>')+'</div>';
+  h+='<div class="hint">Keyboard: + or → next, − or ← back</div>';
+  app.innerHTML=h;
+  var box=document.getElementById('rows'),act=box&&box.querySelector('.active');
+  if(act){box.scrollTop=Math.max(0,act.offsetTop-box.clientHeight*0.4)}
+}
+function finish(){
+  var h=topbar('finish')+'<div class="phead"><div class="eyebrow">Almost done</div><h2>Finishing</h2><p>Weave in, block, and wear it tomorrow.</p></div><div class="checks">';
+  CHECKS.forEach(function(c){var on=!!S.checks[c.id];
+    h+='<button class="check'+(on?' on':'')+'" data-check="'+c.id+'" aria-pressed="'+on+'"><span class="box">'+(on?'✓':'')+'</span><span class="ct">'+(c.opt?'<small>Optional</small>':'')+esc(c.t)+'</span></button>'});
+  app.innerHTML=h+'</div>';
+}
+function render(){
+  var id=route();
+  if(id==='finish'){finish()}else if(BYID[id]){detail(BYID[id])}else home();
+}
+
+/* ---------- events ---------- */
+function step(d){var p=BYID[route()];if(!p)return;var v=val(p)+d,max=rowsOf(p)+1;if(v<0||v>max)return;S.rows[p.id]=v;S.last=p.id;confirmReset=false;changed();render()}
+app.addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b||b.disabled)return;
+  if(b.hasAttribute('data-go')){go(b.getAttribute('data-go'));return}
+  if(b.hasAttribute('data-step')){step(+b.getAttribute('data-step'));return}
+  var p=BYID[route()];
+  if(b.hasAttribute('data-set')&&p){S.rows[p.id]=+b.getAttribute('data-set');S.last=p.id;changed();render();return}
+  if(b.hasAttribute('data-len')){S.bodyExtra=Math.max(-18,Math.min(30,S.bodyExtra+ +b.getAttribute('data-len')));var bp=BYID.body;if((S.rows.body||0)>rowsOf(bp)+1)S.rows.body=rowsOf(bp)+1;changed();render();return}
+  if(b.hasAttribute('data-reset')&&p){var a=b.getAttribute('data-reset');if(a==='ask')confirmReset=true;else if(a==='no')confirmReset=false;else{S.rows[p.id]=0;confirmReset=false;changed()}render();return}
+  if(b.hasAttribute('data-check')){var k=b.getAttribute('data-check');S.checks[k]=!S.checks[k];S.last='finish';changed();render();return}
+});
+document.addEventListener('keydown',function(e){
+  if(e.target&&/input|textarea/i.test(e.target.tagName))return;
+  if(e.key==='+'||e.key==='='||e.key==='ArrowRight'){step(1);e.preventDefault()}
+  else if(e.key==='-'||e.key==='ArrowLeft'){step(-1);e.preventDefault()}
+});
+render();
+})();
+</script>
+
+</body></html>
