@@ -1,0 +1,462 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Crop It Like It's Hot</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="theme-color" content="#0F6F6A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Crop Tracker">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#EEF4F2; --surface:#FFFFFF; --surface-2:#E2ECE9; --ink:#15302D; --ink-2:#4B6662; --line:#C9D9D5;
+  --accent:#0F6F6A; --accent-ink:#FFFFFF; --accent-soft:#CFE7E3;
+  --shape:#D2553F; --shape-soft:#FBE3DC; --shape-ink:#8E2E1D;
+  --chart-bg:#FFFFFF; --chart-ink:#1D2B2A; --chart-grid:#B9C8C4; --chart-void:#D4DDDB;
+  --band:rgba(15,111,106,.22); --band-edge:#0F6F6A; --done:rgba(21,48,45,.10);
+  --serif:"Young Serif",Georgia,"Times New Roman",serif;
+  --sans:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0C1716; --surface:#132322; --surface-2:#1A2F2D; --ink:#E4EFEC; --ink-2:#9DB6B1; --line:#27403D;
+  --accent:#3CC1B5; --accent-ink:#06201D; --accent-soft:#17403C;
+  --shape:#FF8A73; --shape-soft:#3A1F1A; --shape-ink:#FFB9A9;
+  --chart-bg:#F4F7F6; --chart-ink:#1D2B2A; --chart-grid:#B9C8C4; --chart-void:#CBD5D3;
+  --band:rgba(15,111,106,.26); --band-edge:#0F6F6A; --done:rgba(12,23,22,.12);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0C1716; --surface:#132322; --surface-2:#1A2F2D; --ink:#E4EFEC; --ink-2:#9DB6B1; --line:#27403D;
+  --accent:#3CC1B5; --accent-ink:#06201D; --accent-soft:#17403C;
+  --shape:#FF8A73; --shape-soft:#3A1F1A; --shape-ink:#FFB9A9;
+  --chart-bg:#F4F7F6; --chart-ink:#1D2B2A; --chart-grid:#B9C8C4; --chart-void:#CBD5D3;
+  --band:rgba(15,111,106,.26); --band-edge:#0F6F6A; --done:rgba(12,23,22,.12);
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:16px/1.45 var(--sans);padding-inline:16px;padding-block:0 40px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:640px;margin:0 auto}
+h1,h2,h3{font-family:var(--serif);font-weight:400;text-wrap:balance;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.card:focus-visible,.rowitem:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+
+/* home */
+header.hero{padding-block:22px 8px;display:grid;gap:6px}
+header.hero h1{font-size:34px;line-height:1.05}
+.hero .by{color:var(--ink-2);font-size:14px}
+.specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin-block:14px 6px;padding:14px;border-radius:14px;background:var(--surface-2)}
+.specs div{display:grid;gap:2px;min-width:0}
+.specs b{font-weight:600;font-size:14px}
+.sync{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:6px;margin-block:8px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--ink-2);display:inline-block}
+.sync[data-s="ok"] i{background:var(--accent)} .sync[data-s="err"] i{background:var(--shape)}
+.resume{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;margin-block:10px 18px;padding:16px 18px;border:0;border-radius:16px;background:var(--accent);color:var(--accent-ink);text-align:left}
+.resume b{font-size:17px}.resume span{font-size:13px;opacity:.85}
+.group{display:grid;gap:12px;margin-block:10px 22px}
+.card{display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line);text-align:left;width:100%}
+.card h3{font-size:22px}
+.card .meta{font-size:13px;color:var(--ink-2)}
+.card .thumb{width:72px;height:56px;border-radius:8px;background:var(--chart-bg);overflow:hidden;display:grid;place-items:center}
+.card .thumb svg{width:100%;height:100%}
+.bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.card .count{font-size:13px;color:var(--ink-2)}
+.card.done{opacity:.7}
+
+/* detail */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:8px;margin-inline:-16px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.topbar .t{flex:1;min-width:0;font-family:var(--serif);font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.pill{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;min-height:40px}
+.icon{width:40px;padding:0;display:grid;place-items:center}
+.icon:disabled{opacity:.35}
+.counter{display:grid;grid-template-columns:72px 1fr 112px;gap:12px;align-items:center;margin-block:16px 12px}
+.counter .minus{height:72px;border-radius:20px;border:1px solid var(--line);background:var(--surface);font-size:34px;line-height:1}
+.counter .plus{height:112px;border-radius:28px;border:0;background:var(--accent);color:var(--accent-ink);font-size:56px;line-height:1;box-shadow:0 6px 18px -6px var(--accent)}
+.counter .plus:active{transform:scale(.97)}
+.readout{text-align:center;display:grid;gap:2px}
+.readout .num{font-size:52px;line-height:1;font-weight:600}
+.readout .of{font-size:14px;color:var(--ink-2)}
+.side{display:inline-flex;gap:6px;justify-content:center;font-size:13px;font-weight:600}
+.side span{padding:2px 8px;border-radius:6px;background:var(--surface-2)}
+.instr{padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--line);display:grid;gap:8px}
+.instr.shape{background:var(--shape-soft);border-color:var(--shape)}
+.instr .head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.instr .txt{font-size:19px;line-height:1.35;font-weight:500}
+.instr .exp{font-family:var(--mono);font-size:15px;color:var(--ink-2)}
+.instr .sts{font-family:var(--mono);font-weight:600;font-size:15px;white-space:nowrap}
+.instr.shape .sts,.instr.shape .label{color:var(--shape-ink)}
+.tip{font-size:13px;color:var(--ink-2)}
+
+.chartpanel{margin-block:16px;border-radius:16px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.chartbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px}
+.zoom{display:flex;gap:6px}
+.zoom button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-size:20px}
+.chartbox{position:relative;max-height:340px;overflow:auto;background:var(--chart-bg);border-block:1px solid var(--line);overscroll-behavior:contain}
+.chartbox svg{display:block;margin:10px auto}
+.chartinner{position:relative;width:max-content;min-width:100%}
+.rtag{position:absolute;z-index:2;font:600 12px var(--mono);background:var(--band-edge);color:#fff;padding:2px 7px;border-radius:6px;pointer-events:none;white-space:nowrap;transform:translateY(-50%)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 12px;font-size:13px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend svg{width:18px;height:18px;border:1px solid var(--chart-grid);background:var(--chart-bg);border-radius:2px}
+
+.rows{margin-block:18px;display:grid;gap:0;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.rows h3{font-size:18px;padding:14px 16px 8px}
+.rowitem{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:baseline;width:100%;padding:11px 16px;border:0;border-top:1px solid var(--line);background:transparent;text-align:left}
+.rowitem .n{font-family:var(--mono);font-weight:600;font-size:14px}
+.rowitem .d{font-size:15px}
+.rowitem .s{font-family:var(--mono);font-size:13px;color:var(--ink-2)}
+.rowitem.shape .n{color:var(--shape)}
+.rowitem.past{opacity:.45}.rowitem.past .d{text-decoration:line-through}
+.rowitem.on{position:sticky;top:calc(env(safe-area-inset-top,0px) + 61px);bottom:0;z-index:3;background:var(--accent);color:var(--accent-ink)}
+.rowitem.on .s,.rowitem.on .n{color:var(--accent-ink)}
+.reset{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-block:18px}
+.reset button{border:1px solid var(--line);background:transparent;border-radius:10px;padding:10px 14px;font-size:14px}
+.reset .danger{background:var(--shape);border-color:var(--shape);color:#fff}
+
+/* finishing */
+.check{display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:start;width:100%;padding:14px 16px;border:0;border-top:1px solid var(--line);background:transparent;text-align:left}
+.check:first-of-type{border-top:0}
+.box{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-size:17px;color:var(--accent-ink)}
+.check.on .box{background:var(--accent);border-color:var(--accent)}
+.check.on .ct{color:var(--ink-2);text-decoration:line-through}
+.checks{border-radius:16px;border:1px solid var(--line);background:var(--surface);margin-block:16px}
+.intro{margin-block:14px 0;color:var(--ink-2);font-size:15px}
+
+@media (orientation:landscape) and (max-height:520px){
+  .detail-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+  .counter{grid-template-columns:60px 1fr 88px}
+  .counter .plus{height:88px}
+  .chartbox{max-height:60vh}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const ROWS = {"body":[{"r":1,"set":1,"t":"(K2, P1, K1) to end.","x":"(K2, P1, K1) \u00d712.","s":48,"rs":true,"cells":["k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k"]},{"r":2,"set":2,"t":"(K2, P1, K1) to end.","x":"(K2, P1, K1) \u00d712.","s":48,"rs":true,"cells":["k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k"]},{"r":3,"set":3,"t":"(K1, P1) to end.","x":"(K1, P1) \u00d724.","s":48,"rs":true,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":4,"set":4,"t":"(K1, P1) to end.","x":"(K1, P1) \u00d724.","s":48,"rs":true,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":5,"set":5,"t":"(P1, K3) to end.","x":"(P1, K3) \u00d712.","s":48,"rs":true,"cells":["k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p"]},{"r":6,"set":6,"t":"(P1, K3) to end.","x":"(P1, K3) \u00d712.","s":48,"rs":true,"cells":["k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p"]},{"r":7,"set":7,"t":"(K1, P1) to end.","x":"(K1, P1) \u00d724.","s":48,"rs":true,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":8,"set":8,"t":"(K1, P1) to end.","x":"(K1, P1) \u00d724.","s":48,"rs":true,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":9,"set":1,"t":"(K2, P1, K1) to end.","x":"(K2, P1, K1) \u00d712.","s":48,"rs":true,"cells":["k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k"]},{"r":10,"set":2,"t":"(K2, P1, K1) to end.","x":"(K2, P1, K1) \u00d712.","s":48,"rs":true,"cells":["k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k"]},{"r":11,"set":3,"t":"(K1, P1) to end.","x":"(K1, P1) \u00d724.","s":48,"rs":true,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":12,"set":4,"t":"(K1, P1) to end.","x":"(K1, P1) \u00d724.","s":48,"rs":true,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":13,"set":5,"t":"(P1, K3) to end.","x":"(P1, K3) \u00d712.","s":48,"rs":true,"cells":["k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p"]},{"r":14,"set":6,"t":"(P1, K3) to end.","x":"(P1, K3) \u00d712.","s":48,"rs":true,"cells":["k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p"]},{"r":15,"set":7,"t":"(K1, P1) to end.","x":"(K1, P1) \u00d724.","s":48,"rs":true,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":16,"set":8,"t":"(K1, P1) to end.","x":"(K1, P1) \u00d724.","s":48,"rs":true,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":17,"set":1,"t":"(K2, P1, K1) to end.","x":"(K2, P1, K1) \u00d712.","s":48,"rs":true,"cells":["k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k"]}],"front":[{"r":1,"t":"Setup (RS): (K2, P1, K1) \u00d75 across 20 sts, K2, P1. Turn \u2014 work these 23 sts only; leave the other 25 on the cord.","s":23,"rs":true,"cells":["p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k"],"shape":1},{"r":2,"t":"Setup (WS): (P1, K1) \u00d711, P1.","s":23,"rs":false,"cells":["k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":3,"set":1,"t":"P2tog, (K1, P1) to last 3, K1, SSP.","x":"P2tog, (K1, P1) \u00d79, K1, SSP.","s":21,"rs":true,"cells":["ssp","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p2tog"],"shape":1},{"r":4,"set":2,"t":"(P1, K1, P2) to last st, P1.","x":"(P1, K1, P2) \u00d75, P1.","s":21,"rs":false,"cells":["k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k"]},{"r":5,"set":3,"t":"SSK, (K1, P1, K2) to last 3, K1, SSP.","x":"SSK, (K1, P1, K2) \u00d74, K1, SSP.","s":19,"rs":true,"cells":["ssp","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","ssk"],"shape":1},{"r":6,"set":4,"t":"(P1, K1) to last st, P1.","x":"(P1, K1) \u00d79, P1.","s":19,"rs":false,"cells":["k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":7,"set":1,"t":"P2tog, (K1, P1) to last 3, K1, SSP.","x":"P2tog, (K1, P1) \u00d77, K1, SSP.","s":17,"rs":true,"cells":["ssp","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p2tog"],"shape":1},{"r":8,"set":2,"t":"(P1, K1, P2) to last st, P1.","x":"(P1, K1, P2) \u00d74, P1.","s":17,"rs":false,"cells":["k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k"]},{"r":9,"set":3,"t":"SSK, (K1, P1, K2) to last 3, K1, SSP.","x":"SSK, (K1, P1, K2) \u00d73, K1, SSP.","s":15,"rs":true,"cells":["ssp","k","k","k","p","k","k","k","p","k","k","k","p","k","ssk"],"shape":1},{"r":10,"set":4,"t":"(P1, K1) to last st, P1.","x":"(P1, K1) \u00d77, P1.","s":15,"rs":false,"cells":["k","p","k","p","k","p","k","p","k","p","k","p","k","p","k"]},{"r":11,"set":1,"t":"P2tog, (K1, P1) to last 3, K1, SSP.","x":"P2tog, (K1, P1) \u00d75, K1, SSP.","s":13,"rs":true,"cells":["ssp","k","p","k","p","k","p","k","p","k","p","k","p2tog"],"shape":1},{"r":12,"set":2,"t":"(P1, K1, P2) to last st, P1.","x":"(P1, K1, P2) \u00d73, P1.","s":13,"rs":false,"cells":["k","p","k","k","k","p","k","k","k","p","k","k","k"]},{"r":13,"set":3,"t":"SSK, (K1, P1, K2) to last 3, K1, SSP.","x":"SSK, (K1, P1, K2) \u00d72, K1, SSP.","s":11,"rs":true,"cells":["ssp","k","k","k","p","k","k","k","p","k","ssk"],"shape":1},{"r":14,"set":4,"t":"(P1, K1) to last st, P1.","x":"(P1, K1) \u00d75, P1.","s":11,"rs":false,"cells":["k","p","k","p","k","p","k","p","k","p","k"]}],"back":[{"r":1,"set":1,"t":"SSK, (P1, K1) to last 3, P1, K2tog.","x":"SSK, (P1, K1) \u00d710, P1, K2tog.","s":23,"rs":true,"cells":["k2tog","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","ssk"],"shape":1},{"r":2,"set":2,"t":"(P2, K1, P1) to last 3, P2, K1.","x":"(P2, K1, P1) \u00d75, P2, K1.","s":23,"rs":false,"cells":["k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p"]},{"r":3,"set":3,"t":"SSK, (K2, P1, K1) to last 3, P1, K2tog.","x":"SSK, (K2, P1, K1) \u00d74, K2, P1, K2tog.","s":21,"rs":true,"cells":["k2tog","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","ssk"],"shape":1},{"r":4,"set":4,"t":"(K1, P1) to last st, K1.","x":"(K1, P1) \u00d710, K1.","s":21,"rs":false,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p"]},{"r":5,"set":1,"t":"SSK, (P1, K1) to last 3, P1, K2tog.","x":"SSK, (P1, K1) \u00d78, P1, K2tog.","s":19,"rs":true,"cells":["k2tog","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","ssk"],"shape":1},{"r":6,"set":2,"t":"(P2, K1, P1) to last 3, P2, K1.","x":"(P2, K1, P1) \u00d74, P2, K1.","s":19,"rs":false,"cells":["k","k","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","k","p"]},{"r":7,"set":3,"t":"SSK, (K2, P1, K1) to last 3, P1, K2tog.","x":"SSK, (K2, P1, K1) \u00d73, K2, P1, K2tog.","s":17,"rs":true,"cells":["k2tog","p","k","k","k","p","k","k","k","p","k","k","k","p","k","k","ssk"],"shape":1},{"r":8,"set":4,"t":"(K1, P1) to last st, K1.","x":"(K1, P1) \u00d78, K1.","s":17,"rs":false,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p","k","p","k","p"]},{"r":9,"set":1,"t":"SSK, (P1, K1) to last 3, P1, K2tog.","x":"SSK, (P1, K1) \u00d76, P1, K2tog.","s":15,"rs":true,"cells":["k2tog","p","k","p","k","p","k","p","k","p","k","p","k","p","ssk"],"shape":1},{"r":10,"set":2,"t":"(P2, K1, P1) to last 3, P2, K1.","x":"(P2, K1, P1) \u00d73, P2, K1.","s":15,"rs":false,"cells":["k","k","p","k","k","k","p","k","k","k","p","k","k","k","p"]},{"r":11,"set":3,"t":"SSK, (K2, P1, K1) to last 3, P1, K2tog.","x":"SSK, (K2, P1, K1) \u00d72, K2, P1, K2tog.","s":13,"rs":true,"cells":["k2tog","p","k","k","k","p","k","k","k","p","k","k","ssk"],"shape":1},{"r":12,"set":4,"t":"(K1, P1) to last st, K1.","x":"(K1, P1) \u00d76, K1.","s":13,"rs":false,"cells":["p","k","p","k","p","k","p","k","p","k","p","k","p"]}]};
+const SLUG = "crop-it-like-its-hot";
+const LS = "crop-tracker-v1";
+
+const PIECES = [
+  { id:"body", name:"Body", sub:"In the round, bottom up", rows:17, castOn:48, chart:"body", round:true,
+    castLabel:"Cast on",
+    castText:"Cast on 49 sts with long-tail cast on (48 + 1 extra to close the join). Join in the round without twisting and place the marker. You'll have 48 sts.",
+    endText:"Body done, ending on set row R1. Next up: the Front, worked flat over the first 23 sts.",
+    tip:"Every round is a right-side round, read the chart right to left." },
+  { id:"front", name:"Front", sub:"Worked flat over 23 sts", rows:14, castOn:23, chart:"front",
+    castLabel:"Start",
+    castText:"No cast on. Start with the next round's first stitches. Row 1 below works across 23 sts, then you turn and work flat. The other 25 sts wait on the cord for the Back.",
+    endText:"Front done: 11 sts. Put them on hold on scrap yarn or a spare needle. Next up: the Back.",
+    tip:"Designer's tip: slip the first and last stitch of every WS row for tidier edges." },
+  { id:"back", name:"Back", sub:"Worked flat over 25 sts", rows:12, castOn:25, chart:"back",
+    castLabel:"Rejoin",
+    castText:"With the RS facing, rejoin yarn to the 25 sts that have been waiting on the cord. You'll work these flat.",
+    endText:"Back done: 13 sts. Flip the top right side out, then go to Straps & finishing.",
+    tip:"Designer's tip: slip the first and last stitch of every WS row for tidier edges." },
+];
+const FINISH = [
+  "Cast off every back stitch until 1 stitch is left.",
+  "Take the needle out and put the crochet hook into that stitch. Chain 10, or to the strap length that fits you (try it on).",
+  "Take out the hook and put the needle back into the last chain. It becomes the first stitch of the next cast-off.",
+  "Starting at the top left corner of the front, cast off that chain stitch and every front stitch until 1 is left. Don't twist the chain.",
+  "Put the hook back into that stitch and chain 10 (or to your length) for the second strap.",
+  "Join this strap to the back with a slip stitch into the first cast-off stitch on the back (the one that looks like a V).",
+  "Cut the yarn, leaving a 3\" tail, and pull it through the last stitch.",
+  "Weave in all the ends with a darning needle.",
+  "Block the top.",
+];
+const byId = Object.fromEntries(PIECES.map(p=>[p.id,p]));
+
+/* ---------- state ---------- */
+let state = { rows:{body:0,front:0,back:0}, checks:[], last:null, updatedAt:0 };
+try { const s = JSON.parse(localStorage.getItem(LS)||"null"); if (s && s.rows) state = Object.assign(state, s); } catch(e){}
+let syncStatus = "Saved on this device";
+let syncKind = "";
+let db = null, docRef = null, pending = false, writeTimer = null, writing = false;
+
+function saveLocal(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
+function touch(){ state.updatedAt = Date.now(); saveLocal(); queueWrite(); }
+function queueWrite(){
+  if (!docRef) return;
+  pending = true; clearTimeout(writeTimer);
+  writeTimer = setTimeout(flush, 700);
+}
+async function flush(retry){
+  if (!docRef) return;
+  if (writing){ writeTimer = setTimeout(flush, 400); return; }
+  writing = true;
+  const body = { rows:state.rows, checks:state.checks, last:state.last, updatedAt:state.updatedAt };
+  try { await docRef.set(body); pending = false; setSync("Synced", "ok"); }
+  catch(e){
+    writing = false;
+    if (!retry && e && e.code === "unavailable") { setTimeout(()=>flush(true), 1500); return; }
+    setSync("Couldn't sync. Progress is saved on this device.", "err");
+  }
+  writing = false;
+}
+function setSync(t,k){ syncStatus=t; syncKind=k||""; const el=document.getElementById("sync"); if(el){ el.dataset.s=syncKind; el.querySelector("span").textContent=t; } }
+(async ()=>{
+  try{
+    const c = window.claude && await window.claude.use("db");
+    if (!c){ setSync("Saved on this device only"); return; }
+    db = c; docRef = db.doc("progress/"+SLUG);
+    setSync("Connecting…");
+    docRef.onSnapshot(snap=>{
+      if (snap.exists){
+        const d = snap.data();
+        if (d && (d.updatedAt||0) > (state.updatedAt||0) && !pending){
+          state = { rows:Object.assign({body:0,front:0,back:0}, d.rows||{}), checks:(d.checks||[]).slice(), last:d.last||null, updatedAt:d.updatedAt||0 };
+          saveLocal(); render(true);
+        }
+      } else if (state.updatedAt) { queueWrite(); }
+      if (!pending) setSync("Synced", "ok");
+    }, ()=>setSync("Sync paused. Progress is saved on this device.", "err"));
+  }catch(e){ setSync("Saved on this device only"); }
+})();
+
+/* wake lock */
+let wake=null;
+async function keepAwake(){ try{ if(!wake && navigator.wakeLock){ wake = await navigator.wakeLock.request("screen"); wake.addEventListener("release",()=>wake=null);} }catch(e){} }
+document.addEventListener("pointerdown", keepAwake, {once:true});
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible") keepAwake(); });
+
+/* ---------- chart ---------- */
+const SYM = {
+  k:"", p:'<circle cx="5" cy="5" r="1.6" fill="currentColor"/>',
+  k2tog:'<path d="M2 8.5 8 1.5" stroke="currentColor" stroke-width="1.3" fill="none"/>',
+  ssk:'<path d="M2 1.5 8 8.5" stroke="currentColor" stroke-width="1.3" fill="none"/>',
+  p2tog:'<path d="M2 8.5 8 1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="7.3" cy="7.3" r="1.1" fill="currentColor"/>',
+  ssp:'<path d="M2 1.5 8 8.5" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="2.7" cy="7.3" r="1.1" fill="currentColor"/>',
+};
+const LEG = [["k","Knit on RS, purl on WS"],["p","Purl on RS, knit on WS"],["k2tog","K2tog"],["ssk","SSK"],["p2tog","P2tog"],["ssp","SSP"]];
+function chartDims(id){ const rs=ROWS[id]; const W=Math.max(...rs.map(r=>r.cells.length)); return {W,R:rs.length}; }
+function chartSVG(id, cell, thumb){
+  const rs = ROWS[id]; const {W,R}=chartDims(id);
+  const gut = thumb?0:22;
+  const w = W*cell + gut*2, h = R*cell;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${thumb?"100%":w}" height="${thumb?"100%":h}" ${thumb?'preserveAspectRatio="xMidYMid meet"':''} style="color:var(--chart-ink)" data-chart="${id}">`;
+  s += `<rect x="${gut}" y="0" width="${W*cell}" height="${h}" fill="var(--chart-bg)"/>`;
+  rs.forEach((row,i)=>{
+    const y = (R-1-i)*cell; const off = (W-row.cells.length)/2;
+    for(let c=0;c<W;c++){
+      const x = gut + c*cell;
+      const inRow = c>=off && c<off+row.cells.length;
+      if(!inRow){ s+=`<rect x="${x}" y="${y}" width="${cell}" height="${cell}" fill="var(--chart-void)"/>`; continue; }
+      const sym = row.cells[c-off];
+      if (SYM[sym]) s += `<g transform="translate(${x} ${y}) scale(${cell/10})">${SYM[sym]}</g>`;
+    }
+    if(!thumb){
+      const lab = `<text x="${row.rs? gut+W*cell+4 : gut-4}" y="${y+cell/2}" font-size="${Math.min(11,cell*.8)}" font-family="IBM Plex Mono,monospace" fill="var(--chart-ink)" dominant-baseline="central" text-anchor="${row.rs?"start":"end"}">${row.r}</text>`;
+      s += lab;
+    }
+  });
+  if(cell>=5){
+    for(let c=0;c<=W;c++) s+=`<line x1="${gut+c*cell}" y1="0" x2="${gut+c*cell}" y2="${h}" stroke="var(--chart-grid)" stroke-width="${c%4===0&&!thumb?1:.5}"/>`;
+    for(let r=0;r<=R;r++) s+=`<line x1="${gut}" y1="${r*cell}" x2="${gut+W*cell}" y2="${r*cell}" stroke="var(--chart-grid)" stroke-width=".5"/>`;
+  }
+  if(!thumb) s += `<rect id="washdone" x="${gut}" width="${W*cell}" fill="var(--done)"/><rect id="band" x="${gut-2}" width="${W*cell+4}" fill="var(--band)" stroke="var(--band-edge)" stroke-width="2" rx="2"/>`;
+  return s + `</svg>`;
+}
+
+/* ---------- zoom ---------- */
+function getZoom(id){ try{ return parseFloat(localStorage.getItem(LS+"-zoom-"+id))||null; }catch(e){ return null; } }
+function setZoom(id,v){ try{ localStorage.setItem(LS+"-zoom-"+id, String(v)); }catch(e){} }
+
+/* ---------- render ---------- */
+const app = document.getElementById("app");
+function route(){ return (location.hash||"").replace("#","") || "home"; }
+window.addEventListener("hashchange", ()=>{ render(); window.scrollTo(0,0); });
+
+function rowInfo(p, n){
+  if (n===0) return {label:p.castLabel, txt:p.castText, sts:p.castOn, kind:"start"};
+  if (n>p.rows) return {label:"Done", txt:p.endText, sts:ROWS[p.id][p.rows-1].s, kind:"end"};
+  const r = ROWS[p.id][n-1];
+  const prev = n===1 ? p.castOn : ROWS[p.id][n-2].s;
+  return {label:(p.round?"Round ":"Row ")+n, txt:r.t, exp:r.x && r.x!==r.t ? r.x : "", sts:r.s, rs:r.rs, shape:r.s<prev || !!r.shape, kind:"row"};
+}
+
+function home(){
+  const last = state.last && (byId[state.last] || state.last==="finish") ? state.last : null;
+  const done = state.checks.filter(Boolean).length;
+  let h = `<header class="hero"><div class="label">Size 1 · fits chest 28–30"</div><h1>Crop It Like It's Hot</h1><div class="by">Seamless halter crop top by Brenda Lam</div></header>
+  <div class="specs">
+    <div><span class="label">Yarn</span><b>1 skein super chunky, 80 m / 200 g</b></div>
+    <div><span class="label">Gauge</span><b class="mono">7.5 sts × 10 rows = 4"</b></div>
+    <div><span class="label">Needles</span><b>12 mm / US 17 circular, 32"+</b></div>
+    <div><span class="label">Hook</span><b>10 mm / N-15 or larger</b></div>
+  </div>
+  <div class="sync" id="sync" data-s="${syncKind}"><i></i><span>${syncStatus}</span></div>`;
+  if (last){
+    const name = last==="finish" ? "Straps & finishing" : byId[last].name;
+    const where = last==="finish" ? `${done} of ${FINISH.length} steps done` : rowInfo(byId[last], state.rows[last]).label;
+    h += `<button class="resume" onclick="go('${last}')"><span style="display:grid;gap:2px"><span>Pick up where you left off</span><b>${name} · ${where}</b></span><span style="font-size:26px;opacity:1">›</span></button>`;
+  }
+  h += `<div class="label" style="margin-top:14px">Pieces</div><div class="group">`;
+  PIECES.forEach(p=>{
+    const n = state.rows[p.id]||0; const pct = Math.min(100, Math.round(Math.min(n,p.rows)/p.rows*100));
+    const lab = n===0 ? "Not started" : n>p.rows ? "Done" : `${p.round?"Round":"Row"} ${n} / ${p.rows}`;
+    h += `<button class="card ${n>p.rows?"done":""}" onclick="go('${p.id}')">
+      <div style="display:grid;gap:4px;min-width:0"><h3>${p.name}</h3><div class="meta">${p.castLabel==="Cast on"?"Cast on ":""}${p.castOn} sts · ${p.rows} ${p.round?"rounds":"rows"}</div><div class="count mono">${lab}</div></div>
+      <div class="thumb" aria-hidden="true">${chartSVG(p.chart, 4, true)}</div>
+      <div class="bar"><i style="width:${pct}%"></i></div></button>`;
+  });
+  h += `</div><div class="label">Finishing</div><div class="group">
+    <button class="card ${done===FINISH.length?"done":""}" onclick="go('finish')"><div style="display:grid;gap:4px"><h3>Straps & finishing</h3><div class="meta">Cast off, crochet chain straps, weave in, block</div><div class="count mono">${done} / ${FINISH.length} steps</div></div><div></div><div class="bar"><i style="width:${Math.round(done/FINISH.length*100)}%"></i></div></button></div>`;
+  app.innerHTML = h;
+}
+
+function topbar(title, idx){
+  const order = [...PIECES.map(p=>p.id),"finish"];
+  const i = order.indexOf(idx);
+  return `<div class="topbar"><button class="pill" onclick="go('')">‹ All</button>
+    <button class="pill icon" aria-label="Previous piece" ${i<=0?"disabled":""} onclick="go('${order[i-1]||""}')">‹</button>
+    <div class="t">${title}</div>
+    <button class="pill icon" aria-label="Next piece" ${i>=order.length-1?"disabled":""} onclick="go('${order[i+1]||""}')">›</button></div>`;
+}
+
+let curCell = 14;
+function detail(p, keepScroll){
+  const n = state.rows[p.id]||0; const info = rowInfo(p,n);
+  const {W,R} = chartDims(p.chart);
+  const boxW = Math.min(document.documentElement.clientWidth, 640) - 32 - 2;
+  const fit = Math.max(6, Math.floor((boxW - 44 - 4)/W));
+  const def = Math.max(9, Math.min(20, fit));
+  curCell = getZoom(p.chart) || def;
+  curCell = Math.max(Math.min(fit,def), Math.min(def*2.5, curCell));
+  const sideTxt = info.kind!=="row" ? "" : p.round ? `<span>RS</span><span>read ←</span>` : info.rs ? `<span>RS</span><span>read ←</span>` : `<span>WS</span><span>read →</span>`;
+  let h = topbar(p.name, p.id) + `<div class="detail-grid"><div>
+  <div class="counter">
+    <button class="minus" aria-label="Previous row" onclick="step(-1)" ${n<=0?"disabled":""}>−</button>
+    <div class="readout"><div class="label">${info.kind==="row"?(p.round?"Round":"Row"):info.label}</div><div class="num mono">${info.kind==="row"?n:(info.kind==="start"?"0":"✓")}</div><div class="of mono">of ${p.rows}</div><div class="side">${sideTxt}</div></div>
+    <button class="plus" aria-label="Next row" onclick="step(1)" ${n>p.rows?"disabled":""}>+</button>
+  </div>
+  <div class="instr ${info.shape?"shape":""}">
+    <div class="head"><span class="label">${info.kind==="row" ? (info.shape?"Decrease "+(p.round?"round":"row"):"This "+(p.round?"round":"row")) : info.label}</span><span class="sts">${info.sts} sts${info.kind==="row"?" after":""}</span></div>
+    <div class="txt">${info.txt}</div>
+    ${info.exp?`<div class="exp">${info.exp}</div>`:""}
+    ${info.kind==="row" && !info.rs && !p.round ? `<div class="tip">${p.tip}</div>`:""}
+  </div></div>
+  <div><div class="chartpanel">
+    <div class="chartbar"><span class="label">Stitch chart</span><div class="zoom"><button aria-label="Zoom out" onclick="zoom(-1)">−</button><button aria-label="Zoom in" onclick="zoom(1)">+</button></div></div>
+    <div class="chartbox" id="cbox"><div class="chartinner" id="cinner">${chartSVG(p.chart, curCell)}<div class="rtag" id="rtag"></div></div></div>
+    <div class="legend">${LEG.filter(([k])=>ROWS[p.chart].some(r=>r.cells.includes(k)) || k==="k"||k==="p").map(([k,l])=>`<span><svg viewBox="0 0 10 10" style="color:var(--chart-ink)">${SYM[k]}</svg>${l}</span>`).join("")}</div>
+  </div></div></div>
+  <div class="rows" id="rowlist"><h3>All ${p.round?"rounds":"rows"}</h3>`;
+  for(let k=0;k<=p.rows+1;k++){
+    const ri = rowInfo(p,k);
+    const cls = [k<n?"past":"", k===n?"on":"", ri.shape?"shape":""].join(" ");
+    const lab = ri.kind==="row" ? (p.round?"Rnd ":"Row ")+k : (k===0?p.castLabel:"End");
+    const short = ri.kind==="row" ? (ri.exp||ri.txt) : ri.txt;
+    h += `<button class="rowitem ${cls}" data-k="${k}" onclick="setRow(${k})"><span class="n">${lab}</span><span class="d">${short}</span><span class="s">${ri.sts}</span></button>`;
+  }
+  h += `</div><div class="reset" id="reset"><button onclick="askReset()">Reset this piece</button></div>`;
+  app.innerHTML = h;
+  placeBand(p, keepScroll);
+  const box = document.getElementById("cbox");
+  box.addEventListener("scroll", ()=>placeTag(p));
+  box.querySelector("svg").addEventListener("click", e=>{
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top; const r = R - Math.floor(y / curCell);
+    if (r>=1 && r<=R) setRow(r);
+  });
+  const on = document.querySelector(".rowitem.on");
+}
+function placeBand(p, keepScroll){
+  const n = state.rows[p.id]||0; const {R} = chartDims(p.chart);
+  const band = document.getElementById("band"), wash = document.getElementById("washdone");
+  const box = document.getElementById("cbox");
+  if(!band) return;
+  const cur = Math.min(Math.max(n,0),R);
+  if (n>=1 && n<=R){ band.setAttribute("y",(R-n)*curCell); band.setAttribute("height",curCell); band.style.display=""; }
+  else band.style.display="none";
+  const doneRows = Math.min(n-1, R);
+  if (n>R){ wash.setAttribute("y",0); wash.setAttribute("height",R*curCell); }
+  else if (doneRows>0){ wash.setAttribute("y",(R-doneRows)*curCell); wash.setAttribute("height",doneRows*curCell); }
+  else wash.setAttribute("height",0);
+  if(!keepScroll){
+    const target = n>=1&&n<=R ? (R-n)*curCell + 10 : (n>R?0:R*curCell);
+    box.scrollTop = Math.max(0, target - box.clientHeight*0.6);
+    const svg = box.querySelector("svg");
+    if (svg.clientWidth > box.clientWidth) box.scrollLeft = (svg.clientWidth - box.clientWidth)/2;
+  }
+  placeTag(p);
+}
+function placeTag(p){
+  const tag = document.getElementById("rtag"); if(!tag) return;
+  const n = state.rows[p.id]||0; const {R} = chartDims(p.chart);
+  if (n<1||n>R){ tag.hidden=true; return; }
+  tag.hidden=false;
+  const row = ROWS[p.chart][n-1];
+  const box = document.getElementById("cbox");
+  tag.textContent = p.round ? `← Rnd ${n}` : row.rs ? `← RS ${n}` : `WS ${n} →`;
+  tag.style.top = (10 + (R-n)*curCell + curCell/2) + "px";
+  tag.style.left = (box.scrollLeft + 6) + "px";
+}
+
+function finishView(){
+  let h = topbar("Straps & finishing","finish") + `<p class="intro">Joins the back to the front with two crochet-chain straps. Work these after the Back.</p><div class="checks">`;
+  FINISH.forEach((t,i)=>{ const on=!!state.checks[i];
+    h += `<button class="check ${on?"on":""}" onclick="toggleCheck(${i})" aria-pressed="${on}"><span class="box">${on?"✓":""}</span><span class="ct">${t}</span></button>`; });
+  h += `</div><div class="reset" id="reset"><button onclick="askReset()">Clear checklist</button></div>`;
+  app.innerHTML = h;
+}
+
+function render(fromRemote){
+  const r = route();
+  if (r==="home" || (!byId[r] && r!=="finish")) return home();
+  if (r==="finish") return finishView();
+  detail(byId[r], fromRemote);
+}
+
+/* ---------- actions ---------- */
+function go(id){ if(!id){ location.hash=""; if(route()==="home") render(); return; } if(route()===id) render(); else location.hash = id; }
+function setRow(k){
+  const p = byId[route()]; if(!p) return;
+  k = Math.max(0, Math.min(p.rows+1, k));
+  state.rows[p.id]=k; state.last=p.id; touch(); render(true);
+  const box=document.getElementById("cbox"); placeBand(p,false);
+  const on=document.querySelector(".rowitem.on");
+}
+function step(d){ const p=byId[route()]; if(p) setRow((state.rows[p.id]||0)+d); }
+function zoom(d){
+  const p=byId[route()]; if(!p) return;
+  const {W}=chartDims(p.chart);
+  const boxW = document.getElementById("cbox").clientWidth;
+  const fit = Math.max(6, Math.floor((boxW-48)/W)); const def=Math.max(9,Math.min(20,fit));
+  curCell = Math.round(Math.max(Math.min(fit,def), Math.min(def*2.5, curCell*(d>0?1.25:0.8))));
+  setZoom(p.chart,curCell); render(false);
+}
+function toggleCheck(i){ state.checks[i]=!state.checks[i]; state.last="finish"; touch(); finishView(); }
+function askReset(){
+  const el=document.getElementById("reset");
+  el.innerHTML = `<span>Reset progress here?</span><button class="danger" onclick="doReset()">Reset</button><button onclick="render(true)">Keep it</button>`;
+}
+function doReset(){
+  const r=route();
+  if(r==="finish") state.checks=[]; else state.rows[r]=0;
+  touch(); render(false);
+}
+document.addEventListener("keydown", e=>{
+  if(!byId[route()]) return;
+  if(e.key==="+"||e.key==="="||e.key==="ArrowRight"){ e.preventDefault(); step(1); }
+  if(e.key==="-"||e.key==="ArrowLeft"){ e.preventDefault(); step(-1); }
+});
+render();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+</script>
+
+</body></html>
