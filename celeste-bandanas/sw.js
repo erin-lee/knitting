@@ -1,6 +1,6 @@
 // Bump this version string whenever you update index.html so the new
 // version gets picked up instead of the cached one.
-const CACHE_NAME = 'celeste-bandanas-v2';
+const CACHE_NAME = 'celeste-bandanas-v3';
 const ASSETS = [
   './',
   './index.html',

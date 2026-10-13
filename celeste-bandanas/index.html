@@ -147,7 +147,7 @@ summary{cursor:pointer;padding:14px 16px;font-weight:600;border-radius:14px}
 .legend svg{flex:none}
 .chartnote{margin-top:10px;font-size:.82rem;color:var(--ink-2);max-width:34rem}
 .thumb{width:72px;height:72px;flex:none;border-radius:12px;object-fit:cover;object-position:50% 30%;background:var(--surface-2)}
-.photo{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:50% 22%;border-radius:16px;margin-top:14px;background:var(--surface-2)}
+.photo{display:block;width:100%;height:auto;aspect-ratio:2.05/1;object-fit:cover;object-position:50% 50%;border-radius:16px;margin-top:14px;background:var(--surface-2)}
 </style>
 </head>
 <body>
@@ -309,7 +309,7 @@ function detail(id){
   app.innerHTML=`<div style="${vars(p)}">
   <div class="bar"><a class="back" href="#home">‹ All</a><span class="barname">${esc(p.name)}</span>
    <span class="pn"><a href="#${prev.id}" aria-label="Previous bandana: ${esc(prev.name)}">‹</a><a href="#${next.id}" aria-label="Next bandana: ${esc(next.name)}">›</a></span></div>
-  <img class="photo" src="img/${p.id}.webp" alt="${esc(p.name)} bandana worn, seen from behind" width="720" height="720">
+  <img class="photo" src="img/${p.id}.webp" alt="${esc(p.name)} bandana worn, seen from behind" width="960" height="468">
   <header class="hero"><span id="tri"></span><div><h1>${esc(p.name)} Bandana</h1><p>${esc(p.yarn)} · ${esc(p.code)}</p><p>${esc(p.lace)} · ${esc(p.size)}</p><a href="${p.url}" target="_blank" rel="noopener">Original pattern ↗</a></div></header>
   <section class="counter" aria-label="Row counter">
    <div class="numrow"><span class="numlab">Row</span><span id="num"></span><span id="of"></span><span id="side" class="pill"></span></div>
