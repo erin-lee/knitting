@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Celeste Bandanas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="theme-color" content="#EDF0F5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bandanas">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Young+Serif&display=swap">
+<style>
+/* Layout: one column. Home lists seven bandanas as cards with a triangle that fills from the cast-on point as rows are knit.
+   Each bandana opens its own section with a big + counter, the current row, and a finishing checklist.
+   Accent per bandana = the yarn colour it is knit in. */
+:root{
+  color-scheme:light;
+  --bg:#EDF0F5; --surface:#FFFFFF; --surface-2:#E3E8F0; --ink:#1A2133; --ink-2:#4F596E;
+  --line:#D0D7E2; --track:#DCE2EB; --focus:#2F5BD8;
+  --yarn:#DDBF86; --on-yarn:#2B2210;
+  --display:'Young Serif', Georgia, serif;
+  --body:'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10141E; --surface:#192031; --surface-2:#232C42; --ink:#E9ECF4; --ink-2:#9AA5BB;
+    --line:#2B3550; --track:#283249; --focus:#8FB0FF; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10141E; --surface:#192031; --surface-2:#232C42; --ink:#E9ECF4; --ink-2:#9AA5BB;
+  --line:#2B3550; --track:#283249; --focus:#8FB0FF; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.5;padding-inline:16px;padding-block:0 40px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:40rem;margin-inline:auto}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+button{font:inherit;color:inherit;cursor:pointer}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.15;text-wrap:balance;margin:0}
+p{margin:0}
+
+/* triangle that fills from the cast-on point */
+.tri{display:block;flex:none;width:var(--s);height:calc(var(--s)*.78);clip-path:polygon(0 0,100% 0,50% 100%);background:var(--track);position:relative}
+.tri i{position:absolute;left:0;right:0;bottom:0;height:var(--p);background:repeating-linear-gradient(90deg,rgba(0,0,0,.09) 0 2px,transparent 2px 5px),var(--yarn);transition:height .25s ease}
+@media (prefers-reduced-motion:reduce){.tri i{transition:none}}
+
+/* home */
+.top{padding-block:28px 14px}
+.top h1{font-size:2.1rem}
+.top .sub{color:var(--ink-2);margin-top:6px;max-width:34rem}
+.shared{display:flex;flex-wrap:wrap;gap:8px;margin-block:14px 18px}
+.chip{font-family:var(--mono);font-size:.78rem;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink-2)}
+.resume{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:14px 16px;border:0;border-radius:14px;background:var(--yarn);color:var(--on-yarn);font-weight:600;margin-bottom:18px;text-decoration:none}
+.resume small{display:block;font-weight:500;opacity:.8}
+.cards{list-style:none;margin:0;padding:0;display:grid;gap:10px;grid-template-columns:1fr}
+@media (min-width:36rem){.cards{grid-template-columns:1fr 1fr}}
+.card{display:flex;align-items:center;gap:14px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;text-decoration:none;min-width:0}
+.card:hover{border-color:var(--ink-2)}
+.cardtxt{min-width:0;flex:1}
+.card h2{font-size:1.2rem}
+.card .meta{color:var(--ink-2);font-size:.875rem}
+.card .stat{font-family:var(--mono);font-size:.82rem;margin-top:4px;font-variant-numeric:tabular-nums}
+.card .go{color:var(--ink-2);font-size:1.4rem}
+.credit{margin-top:22px;color:var(--ink-2);font-size:.875rem;max-width:34rem}
+.sync{margin-top:10px;font-family:var(--mono);font-size:.75rem;color:var(--ink-2)}
+
+/* detail */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px;padding-block:10px;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+.bar .back{font-weight:600;text-decoration:none;padding:8px 12px;margin-left:-12px;border-radius:10px}
+.bar .barname{flex:1;text-align:center;font-family:var(--display);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .pn{display:flex;gap:2px}
+.bar .pn a{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;text-decoration:none;font-size:1.4rem}
+.hero{display:flex;gap:16px;align-items:center;padding-block:20px 6px}
+.hero h1{font-size:1.7rem}
+.hero p{color:var(--ink-2);font-size:.9rem}
+.hero a{font-size:.875rem}
+.counter{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:14px}
+.numrow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.numlab{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);width:100%}
+#num{font-family:var(--mono);font-weight:600;font-size:4.2rem;line-height:1;font-variant-numeric:tabular-nums}
+#of{font-family:var(--mono);color:var(--ink-2);font-size:1.1rem;font-variant-numeric:tabular-nums}
+.pill{font-family:var(--mono);font-size:.8rem;font-weight:600;padding:3px 10px;border-radius:999px;border:1.5px solid var(--ink);margin-left:auto}
+.pill.rs{background:var(--ink);color:var(--bg)}
+.btns{display:grid;grid-template-columns:1fr 2.2fr;gap:12px;margin-top:14px}
+.btns button{min-height:88px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface-2);font-size:2.2rem;font-weight:600;line-height:1}
+#plus{background:var(--yarn);color:var(--on-yarn);border-color:transparent;box-shadow:0 0 0 4px color-mix(in srgb,var(--yarn) 30%,transparent)}
+.btns button:disabled{opacity:.4;cursor:default}
+.btns button:active:not(:disabled){transform:scale(.98)}
+.cur{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.cur .where{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.ins{font-family:var(--mono);font-size:1.12rem;line-height:1.55;margin-top:8px;overflow-wrap:anywhere}
+.sts{display:flex;gap:8px;align-items:center;margin-top:10px;font-family:var(--mono);font-size:.9rem;font-variant-numeric:tabular-nums}
+.inc{background:var(--yarn);color:var(--on-yarn);border-radius:6px;padding:1px 8px;font-weight:600}
+.note{margin-top:10px;font-size:.9rem;padding:8px 10px;border-left:4px solid var(--yarn);background:var(--surface-2);border-radius:0 8px 8px 0}
+.nxt{margin-top:10px;color:var(--ink-2);font-size:.9rem;padding-inline:4px}
+.nxt code{font-family:var(--mono);font-size:.85rem;overflow-wrap:anywhere}
+details{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+summary{cursor:pointer;padding:14px 16px;font-weight:600;border-radius:14px}
+.rows{list-style:none;margin:0;padding:0 8px 8px;max-height:min(60vh,26rem);overflow:auto}
+.rowbtn{display:grid;grid-template-columns:2.4rem 2.2rem 1fr auto;gap:8px;align-items:baseline;width:100%;text-align:left;border:0;background:none;padding:8px;border-radius:8px;font-family:var(--mono);font-size:.82rem}
+.rowbtn .rt{overflow-wrap:anywhere;min-width:0}
+.rowbtn .rn{font-weight:600;font-variant-numeric:tabular-nums}
+.rowbtn .rst{font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.rows li.past .rowbtn{opacity:.45}
+.rows li.act .rowbtn{background:var(--yarn);color:var(--on-yarn);opacity:1}
+.rows li.act .rst{color:inherit}
+.sec{margin-top:22px}
+.sec h2{font-size:1.25rem;margin-bottom:8px}
+.tips{margin:0;padding-left:1.1rem;color:var(--ink-2);font-size:.92rem}
+.tips li+li{margin-top:6px}
+.key{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;padding:0 16px 16px;margin:0;font-size:.9rem}
+.key dt{font-family:var(--mono);font-weight:600}
+.key dd{margin:0;color:var(--ink-2)}
+.fin{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.fin label{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.fin input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--ink);flex:none}
+.fin input:checked+span{opacity:.5;text-decoration:line-through}
+.reset{margin-top:26px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.reset button{padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.reset .danger{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.reset span{color:var(--ink-2);font-size:.9rem}
+
+/* chart */
+.chartin{padding:0 12px 14px}
+.chartbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+#chartdir{font-family:var(--mono);font-size:.82rem;font-variant-numeric:tabular-nums;min-width:0}
+.zoom{display:flex;gap:6px;flex:none}
+.zoom button{width:44px;height:36px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;font-size:1.2rem;line-height:1}
+.zoom button:disabled{opacity:.4;cursor:default}
+.chartbox{overflow:auto;max-height:min(58vh,26rem);border:1px solid var(--line);border-radius:10px;background:var(--surface);overscroll-behavior:contain}
+.chartbox svg{display:block;cursor:pointer}
+.chart .cell{fill:var(--surface);stroke:var(--line);stroke-width:1}
+.chart .gr{stroke:var(--line);stroke-width:1;fill:none}
+.chart .gl{stroke:var(--ink);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.chart .gd{fill:var(--ink)}
+.chart .gm{fill:var(--yarn);opacity:.6}
+.chart .num{fill:var(--ink-2);font-family:var(--mono);dominant-baseline:central;pointer-events:none}
+.chart .wash{fill:var(--ink);opacity:.08;pointer-events:none}
+.chart .hl{fill:var(--yarn);fill-opacity:.5;stroke:var(--ink);stroke-width:1.5;pointer-events:none}
+.legend{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:6px 14px;font-size:.85rem;color:var(--ink-2)}
+.legend li{display:flex;align-items:center;gap:8px;min-width:0}
+.legend svg{flex:none}
+.chartnote{margin-top:10px;font-size:.82rem;color:var(--ink-2);max-width:34rem}
+.thumb{width:72px;height:72px;flex:none;border-radius:12px;object-fit:cover;object-position:50% 30%;background:var(--surface-2)}
+.photo{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:50% 22%;border-radius:16px;margin-top:14px;background:var(--surface-2)}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- pattern data: compact row-by-row notation, stitch counts computed ---------- */
+const PL='k2, p to last 2, sl2';
+const W=(t,i,n)=>['WS',t||PL,i||0,n];
+const Rr=(t,i,n)=>['RS',t,i===undefined?2:i,n];
+const EDGE='Edges: k the first 2 stitches and slip the last 2 with yarn in front on every row. Keep the edge stitches loose.';
+const M1TIP='M1R and M1L can be swapped for yo if you want it simpler.';
+const FIT='The stitch count changes every right-side row, so work as many repeats as fit before the end stitches.';
+const SRC='https://celesteknitwear.com/';
+const FINISH=[
+  'Break the yarn with a 10 cm (4 in) tail and leave the stitches live on the needle.',
+  'First tie: with DPNs cast on 3 (do not turn), slide and k3 as i-cord to about 30 cm. Keep the yarn attached.',
+  'Join: put the 3 i-cord stitches on the needle beside the live stitches. *k2, ssk, move the 3 stitches back* until 3 remain.',
+  'Second tie: i-cord to about 30 cm, then bind off.',
+  'Weave in the ends and block.'
+];
+const ST=[ // setup rows shared by the first group
+];
+const P=[
+ {id:'atmosphere',name:'Atmosphere',yarn:'Marzipan',code:'Drops Safran 71',hue:'#DDBF86',on:'#2B2210',lace:'Eyelet stripes',size:'41 cm × 23 cm (16¼ × 9 in)',cast:5,
+  url:SRC+'atmosphere-bandana-knitting-pattern/',tips:[EDGE,M1TIP],
+  setup:[W('k2, p1, sl2'),Rr('k2, M1R, k1, M1L, sl2'),W()],
+  block:[Rr('k2, M1R, *k2tog, yo* to last 3, k1, M1L, sl2'),W(),Rr('k2, M1R, k to last 2, M1L, sl2'),W(),Rr('k2, M1R, k to last 2, M1L, sl2'),W()],reps:12},
+ {id:'spice-market',name:'Spice Market',yarn:'Red clay',code:'Drops Safran 59',hue:'#B5513A',on:'#FFFFFF',lace:'k3tog lace',size:'40 cm × 23 cm (15¾ × 9 in)',cast:5,
+  url:SRC+'spice-market-bandana-knitting-pattern/',tips:[EDGE,M1TIP],
+  setup:[W('k2, p1, sl2'),Rr('k2, M1R, k1, M1L, sl2'),W(),Rr('k2, M1R, yo, k3tog, yo, M1L, sl2'),W(),Rr('k2, M1R, k1, yo, k3tog, yo, k1, M1L, sl2'),W(),Rr('k2, M1R, k2, yo, k3tog, yo, k2, M1L, sl2'),W()],
+  block:[Rr('k2, M1R, *yo, k3tog, yo, k3* to last 5, yo, k3tog, yo, M1L, sl2'),W(),Rr('k2, M1R, k1, *yo, k3tog, yo, k3* to last 6, yo, k3tog, yo, k1, M1L, sl2'),W(),Rr('k2, M1R, k2, *yo, k3tog, yo, k3* to last 7, yo, k3tog, yo, k2, M1L, sl2'),W()],reps:10},
+ {id:'in-bloom',name:'In Bloom',yarn:'Light rose',code:'Drops Safran 77',hue:'#EBB1BE',on:'#3A1620',lace:'Delicate lace',size:'46 cm × 21 cm (18 × 8¼ in)',cast:5,
+  url:SRC+'in-bloom-bandana-knitting-pattern/',tips:[EDGE,M1TIP,'After the last repeat, work the 2 plain closing rows before the ties.'],
+  setup:[W('k2, p1, sl2'),Rr('k2, M1R, k1, M1L, sl2'),W(),Rr('k2, M1R, k2tog, yo, k1, M1L, sl2'),W(),Rr('k2, M1R, k2tog, yo, k1, yo, ssk, M1L, sl2'),W(),Rr('k2, M1R, k2tog, yo, k3, yo, ssk, M1L, sl2'),W(),Rr('k2, M1R, k3, yo, k3tog, yo, k3, M1L, sl2'),W()],
+  block:[Rr('k2, M1R, *k2tog, yo, k6* to last 5, k2tog, yo, k1, M1L, sl2'),W(),Rr('k2, M1R, *k2tog, yo, k1, yo, ssk, k3* to last 7, k2tog, yo, k1, yo, ssk, M1L, sl2'),W(),Rr('k2, M1R, *k2tog, yo, k3, yo, ssk, k1* to last 9, k2tog, yo, k3, yo, ssk, M1L, sl2'),W(),Rr('k2, M1R, *k3, yo, k3tog, yo, k5* to last 8, yo, k3tog, yo, k3, M1L, sl2'),W()],reps:8,
+  tail:[Rr('k2, M1R, k to last 2, M1L, sl2'),W()]},
+ {id:'flower-bed',name:'Flower Bed',yarn:'Lavender',code:'Drops Safran 05',hue:'#AD97D8',on:'#221838',lace:'Simple eyelet',size:'43 cm × 22 cm (17 × 8¾ in)',cast:5,
+  url:SRC+'flower-bed-bandana-knitting-pattern/',tips:[EDGE,M1TIP,'Eyelet = k2tog, yo, k1, yo, ssk (5 stitches).'],
+  setup:[W('k2, p1, sl2'),Rr('k2, M1R, k1, M1L, sl2'),W(),Rr('k2, M1R, k3, M1L, sl2'),W(),Rr('k2, M1R, eyelet, M1L, sl2'),W(),Rr('k2, M1R, k to last 2, M1L, sl2'),W(),Rr('k2, M1R, k2, eyelet, k2, M1L, sl2'),W(),Rr('k2, M1R, k to last 2, M1L, sl2'),W()],
+  block:[Rr('k2, M1R, *eyelet, k3* until 5 left, eyelet, M1L, sl2'),W(),Rr('k2, M1R, k to last 2, M1L, sl2'),W(),Rr('k2, M1R, k2, *eyelet, k3* until 7 left, eyelet, k2, M1L, sl2'),W(),Rr('k2, M1R, k to last 2, M1L, sl2'),W()],reps:8},
+ {id:'summer-veil',name:'Summer Veil',yarn:'Marzipan',code:'Drops Safran 71',hue:'#DDBF86',on:'#2B2210',lace:'Quatrefoil eyelet lace',size:'49 cm × 24 cm (19¼ × 9½ in)',cast:4,
+  url:SRC+'summer-veil-bandana-knitting-pattern/',tips:[EDGE,FIT],
+  setup:[W('k2, sl2'),Rr('k2, yo, sl2',1),W('k2, p1, sl2'),Rr('k2, yo, k1, yo, sl2'),W(),Rr('k2, yo, k3, yo, sl2'),W(),Rr('k2, yo, k1, k2tog, yo, k2, yo, sl2'),W(),Rr('k2, yo, k1, k2tog, yo, k1, yo, ssk, k1, yo, sl2'),W(),Rr('k2, yo, k3, k2tog, yo, k4, yo, sl2'),W(),Rr('k2, yo, k to last 2, yo, sl2'),W()],
+  block:[Rr('k2, yo, k1, *k2tog, yo, k6* to last 2, yo, sl2'),W(),Rr('k2, yo, k1, *k2tog, yo, k1, yo, ssk, k3* to last 2, yo, sl2'),W(),Rr('k2, yo, k3, *k2tog, yo, k6* to last 2, yo, sl2'),W(),Rr('k2, yo, k to last 2, yo, sl2'),W()],reps:9},
+ {id:'country-road',name:'Country Road',yarn:'Almond',code:'Drops Safran 22',hue:'#CDAE90',on:'#2E2216',lace:'Eyelet around a central stitch',size:'49 cm × 21.5 cm (19¼ × 8½ in)',cast:4,
+  url:SRC+'country-road-bandana-knitting-pattern/',tips:[EDGE,'CS is the central stitch: k on RS, p on WS. It stays put while the stitches on both sides grow.',FIT+' If the stitch just before CS is a k2tog, work a yo after it.'],
+  setup:[W('k2, sl2'),Rr('k2, yo, sl2',1),W('k2, p1, sl2'),Rr('k2, yo, k1, yo, sl2'),W(),Rr('k2, yo, k to last 2, yo, sl2'),W(),Rr('k2, yo, k to last 2, yo, sl2'),W(),Rr('k2, yo, k to last 2, yo, sl2'),W(),Rr('k2, yo, k to last 2, yo, sl2'),W('k2, p to last 2, sl2',0,'Put a removable marker on the 8th stitch. That is CS, and it stays put for the rest of the bandana.')],
+  block:[Rr('k2, yo, *k3, k2tog, yo* to CS, CS, *yo, ssk, k3* to last 2, yo, sl2'),W(),Rr('k2, yo, *k3, k2tog, yo* to CS, CS, k1, *yo, ssk, k3* to last 2, yo, sl2'),W(),Rr('k2, yo, *k3, k2tog, yo* to CS, CS, k2, *yo, ssk, k3* to last 2, yo, sl2'),W(),Rr('k2, yo, *k3, k2tog, yo* to CS, CS, k3, *yo, ssk, k3* to last 2, yo, sl2'),W(),Rr('k2, yo, *k3, k2tog, yo* to CS, CS, k4, *yo, ssk, k3* to last 2, yo, sl2'),W()],reps:7},
+ {id:'canyon-clay',name:'Canyon Clay',yarn:'Red clay',code:'Drops Safran 59',hue:'#B5513A',on:'#FFFFFF',lace:'Staggered eyelet',size:'42 cm × 22 cm (16½ × 8¾ in)',cast:4,
+  url:SRC+'canyon-clay-bandana-knitting-pattern/',tips:[EDGE],
+  setup:[W('k2, sl2'),Rr('k2, yo, sl2',1),W('k2, p1, sl2'),Rr('k2, yo, k1, yo, sl2'),W(),Rr('k2, yo, k3, yo, sl2'),W(),Rr('k2, yo, k1, k2tog, yo, k2, yo, sl2'),W(),Rr('k2, yo, k to last 2, yo, sl2'),W()],
+  block:[Rr('k2, yo, k1, *k2tog, yo, k2* to last 2, yo, sl2'),W(),Rr('k2, yo, k to last 2, yo, sl2'),W()],reps:17}
+];
+const KEYDEF=[
+ [/./,'k','knit'],[/./,'p','purl'],[/./,'sl','slip purlwise with yarn in front'],[/./,'RS / WS','right side / wrong side'],
+ [/\byo\b/,'yo','yarn over'],[/k2tog/,'k2tog','knit 2 together'],
+ [/ssk/,'ssk','slip 2 stitches knitwise one at a time, return them to the left needle, knit them together through the back loops'],
+ [/k3tog/,'k3tog','slip 2 together knitwise, k1, pass both slipped stitches over'],
+ [/M1[RL]/,'M1R / M1L','make 1 right / make 1 left (lifted increases)'],
+ [/\bCS\b/,'CS','central stitch, k on RS and p on WS'],[/\*/,'*…*','repeat what is between the asterisks']
+];
+P.forEach(p=>{
+  let sts=p.cast;const rows=[];
+  const push=(r,group,rep,inRep,len)=>{sts+=r[2];rows.push({n:rows.length+1,side:r[0],text:r[1],inc:r[2],sts,note:r[3],group,rep,inRep,len});};
+  p.setup.forEach((r,i)=>push(r,'setup',0,i+1,p.setup.length));
+  for(let k=0;k<p.reps;k++)p.block.forEach((r,i)=>push(r,'rep',k+1,i+1,p.block.length));
+  (p.tail||[]).forEach((r,i)=>push(r,'tail',0,i+1,p.tail.length));
+  p.rows=rows;
+});
+
+/* ---------- state ---------- */
+const LS='bandanaTracker.v1';
+let state={counts:{},checks:{},last:null,t:0};
+try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s&&s.counts)state=clean(s)}catch(e){}
+function clean(s){
+  const out={counts:{},checks:{},last:null,t:Number(s.t)||0};
+  P.forEach(p=>{
+    const n=Number(s.counts&&s.counts[p.id]);out.counts[p.id]=Number.isFinite(n)?Math.max(0,Math.min(p.rows.length+1,Math.floor(n))):0;
+    const c=s.checks&&s.checks[p.id];out.checks[p.id]=FINISH.map((_,i)=>!!(c&&c[i]));
+  });
+  out.last=P.some(p=>p.id===s.last)?s.last:null;return out;
+}
+state=clean(state);
+const cnt=id=>state.counts[id]||0;
+const finDone=id=>(state.checks[id]||[]).filter(Boolean).length;
+const R=p=>p.rows.length;
+function pct(p){const n=cnt(p.id);const d=n>R(p)?R(p):Math.max(0,n-1);return Math.round(d/R(p)*100)}
+function status(p){const n=cnt(p.id),f=finDone(p.id);
+  if(n===0&&f===0)return 'Not started · cast on '+p.cast;
+  if(n===0)return 'Cast on '+p.cast;
+  if(n<=R(p))return 'Row '+n+' of '+R(p);
+  return f>=FINISH.length?'Finished':'Body done · finishing '+f+'/'+FINISH.length;}
+
+/* ---------- persistence: this device always, shared db when available ---------- */
+let dbref=null,dirty=false,writing=false,tm=null,syncState='local';
+const SYNC={local:'Saved on this device',syncing:'Saving…',synced:'Saved · follows you across devices',offline:'Saved on this device · sync paused'};
+function setSync(k){syncState=k;document.querySelectorAll('.sync').forEach(e=>e.textContent=SYNC[k])}
+function persist(){
+  state.t=Date.now();
+  try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}
+  if(dbref){dirty=true;clearTimeout(tm);tm=setTimeout(flush,700);setSync('syncing')}
+}
+async function flush(){
+  if(writing||!dirty||!dbref)return;
+  writing=true;dirty=false;const body=JSON.parse(JSON.stringify(state));let ok=true;
+  try{await dbref.set(body)}catch(e){
+    if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,500+Math.random()*500));try{await dbref.set(body)}catch(_){ok=false}}
+    else ok=false;
+  }
+  writing=false;
+  if(dirty)flush();else setSync(ok?'synced':'offline');
+}
+(async()=>{
+  try{
+    const db=window.claude&&window.claude.use?await window.claude.use('db'):null;
+    if(!db)return;
+    const ref=db.doc('progress/bandanas');dbref=ref;
+    ref.onSnapshot(snap=>{
+      if(snap.exists){
+        const d=snap.data();
+        if(!dirty&&!writing&&Number(d.t)>state.t){state=clean(d);try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}render()}
+      }
+      if(!dirty&&!writing)setSync('synced');
+    },()=>setSync('local'));
+  }catch(e){}
+})();
+
+/* ---------- helpers ---------- */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const vars=p=>`--yarn:${p.hue};--on-yarn:${p.on}`;
+const tri=(p,s)=>`<span class="tri" style="--p:${pct(p)}%;--s:${s}px" role="img" aria-label="${pct(p)} percent knitted"><i></i></span>`;
+const app=document.getElementById('app');
+let ui={rowsOpen:false,chartOpen:true,confirm:false};
+
+function routeId(){const h=location.hash.replace('#','');return P.some(p=>p.id===h)?h:'home'}
+
+/* ---------- home ---------- */
+function home(){
+  const last=P.find(p=>p.id===state.last&&status(p)!=='Finished');
+  app.innerHTML=`
+  <header class="top"><h1>Celeste Bandanas</h1>
+   <p class="sub">Seven knitted triangle bandanas from Celeste Knitwear. Pick one, tap + after every row, and your place is saved.</p></header>
+  <div class="shared"><span class="chip">Drops Safran, sport cotton</span><span class="chip">3 mm (US 2.5) + DPNs</span><span class="chip">24 sts × 32 rows = 10 cm</span></div>
+  ${last?`<a class="resume" href="#${last.id}" style="${vars(last)}"><span>Pick up where you left off<small>${esc(last.name)} · ${esc(status(last))}</small></span><span aria-hidden="true">›</span></a>`:''}
+  <ul class="cards">${P.map(p=>`<li><a class="card" href="#${p.id}" style="${vars(p)}"><img class="thumb" src="img/${p.id}.webp" alt="" width="72" height="72" loading="lazy">
+    <span class="cardtxt"><h2>${esc(p.name)}</h2><p class="meta">${esc(p.yarn)} · ${esc(p.lace)}</p><p class="stat">${esc(status(p))}${cnt(p.id)>0&&cnt(p.id)<=R(p)?' · '+pct(p)+'%':''}</p></span>${tri(p,40)}</a></li>`).join('')}</ul>
+  <p class="credit">Patterns and photos by Celeste Knitwear. Each bandana has its row-by-row stitches and a stitch chart drawn from them. Open the original page for photos and the full write-up. Stitch counts after each row are calculated from the pattern's own counts.</p>
+  <p class="sync"></p>`;
+  setSync(syncState);
+  window.scrollTo(0,0);
+}
+
+/* ---------- detail ---------- */
+function detail(id){
+  const i=P.findIndex(p=>p.id===id),p=P[i],prev=P[(i+P.length-1)%P.length],next=P[(i+1)%P.length];
+  const all=p.rows.map(r=>r.text).join(' ');
+  const keys=KEYDEF.filter(k=>k[0].test(all));
+  app.innerHTML=`<div style="${vars(p)}">
+  <div class="bar"><a class="back" href="#home">‹ All</a><span class="barname">${esc(p.name)}</span>
+   <span class="pn"><a href="#${prev.id}" aria-label="Previous bandana: ${esc(prev.name)}">‹</a><a href="#${next.id}" aria-label="Next bandana: ${esc(next.name)}">›</a></span></div>
+  <img class="photo" src="img/${p.id}.webp" alt="${esc(p.name)} bandana worn, seen from behind" width="720" height="720">
+  <header class="hero"><span id="tri"></span><div><h1>${esc(p.name)} Bandana</h1><p>${esc(p.yarn)} · ${esc(p.code)}</p><p>${esc(p.lace)} · ${esc(p.size)}</p><a href="${p.url}" target="_blank" rel="noopener">Original pattern ↗</a></div></header>
+  <section class="counter" aria-label="Row counter">
+   <div class="numrow"><span class="numlab">Row</span><span id="num"></span><span id="of"></span><span id="side" class="pill"></span></div>
+   <div class="btns"><button id="minus" aria-label="Back one row">−</button><button id="plus" aria-label="Next row">+</button></div>
+  </section>
+  <section id="cur" class="cur" aria-live="polite"></section>
+  <p id="nxt" class="nxt"></p>
+  ${chartHTML(p)}
+  <details id="rowsd" ${ui.rowsOpen?'open':''}><summary>All ${R(p)} rows</summary>
+   <ol class="rows">${p.rows.map(r=>`<li data-n="${r.n}"><button class="rowbtn" data-n="${r.n}"><span class="rn">${r.n}</span><span>${r.side}</span><span class="rt">${esc(r.text)}</span><span class="rst">${r.sts}</span></button></li>`).join('')}</ol></details>
+  <section class="sec"><h2>Notes</h2><ul class="tips">${p.tips.map(t=>`<li>${esc(t)}</li>`).join('')}<li>Row total follows the stated repeats (${p.reps}). The pattern also says to stop when the length suits you.</li></ul></section>
+  <details><summary>Stitch key</summary><dl class="key">${keys.map(k=>`<dt>${esc(k[1])}</dt><dd>${esc(k[2])}</dd>`).join('')}</dl></details>
+  <section class="sec"><h2>Finishing</h2><ul class="fin">${FINISH.map((t,k)=>`<li><label for="fin-${p.id}-${k}"><input type="checkbox" id="fin-${p.id}-${k}" data-k="${k}" ${state.checks[p.id][k]?'checked':''}><span>${esc(t)}</span></label></li>`).join('')}</ul></section>
+  <div class="reset" id="reset"></div>
+  <p class="sync"></p></div>`;
+  setSync(syncState);
+  drawChart(p);updateDetail(p);renderReset(p);
+  window.scrollTo(0,0);
+}
+function updateDetail(p){
+  const n=cnt(p.id),T=R(p),r=p.rows[n-1];
+  document.getElementById('tri').innerHTML=tri(p,72);
+  document.getElementById('num').textContent=n>T?T:n;
+  document.getElementById('of').textContent='of '+T;
+  const side=document.getElementById('side');
+  if(r){side.textContent=r.side;side.className='pill '+(r.side==='RS'?'rs':'ws')}else{side.textContent='';side.className='pill';side.style.display='none'}
+  if(r)side.style.display='';
+  document.getElementById('minus').disabled=n<=0;
+  document.getElementById('plus').disabled=n>T;
+  let cur;
+  if(n===0)cur=`<p class="where">Start</p><p class="ins">Cast on ${p.cast} stitches.</p><p class="note">Tap + when you are ready for row 1.</p>`;
+  else if(n>T)cur=`<p class="where">Bandana body done</p><p class="ins">Break the yarn and leave ${p.rows[T-1].sts} stitches live.</p><p class="note">Work the ties in the Finishing list below.</p>`;
+  else{
+    const where=r.group==='setup'?`Set-up row ${r.inRep} of ${r.len}`:r.group==='rep'?`Repeat ${r.rep} of ${p.reps} · row ${r.inRep} of ${r.len}`:`Closing row ${r.inRep} of ${r.len}`;
+    cur=`<p class="where">${where}</p><p class="ins">${esc(r.text)}</p><p class="sts"><span>→ ${r.sts} sts</span>${r.inc>0?`<span class="inc">+${r.inc}</span>`:''}</p>${r.note?`<p class="note">${esc(r.note)}</p>`:''}`;
+  }
+  document.getElementById('cur').innerHTML=cur;
+  let nx='';
+  if(n<T){const q=p.rows[n];nx=`Next: row ${q.n} · ${q.side} · <code>${esc(q.text)}</code>`}
+  else if(n===T)nx='Next: finish the body and start the ties.';
+  document.getElementById('nxt').innerHTML=nx;
+  document.querySelectorAll('.rows li').forEach(li=>{const k=Number(li.dataset.n);li.className=k===n?'act':k<n?'past':''});
+  const d=document.getElementById('rowsd');
+  if(d&&d.open){const a=d.querySelector('li.act');if(a)a.scrollIntoView({block:'nearest'})}
+  updateChart(p);
+}
+function renderReset(p){
+  const el=document.getElementById('reset');
+  el.innerHTML=ui.confirm?`<span>Clear the row count and checklist for ${esc(p.name)}?</span><button class="danger" id="yes">Yes, reset</button><button id="no">Cancel</button>`:`<button id="ask">Reset this bandana</button>`;
+}
+function setCount(p,n){
+  n=Math.max(0,Math.min(R(p)+1,n));
+  if(n===cnt(p.id))return;
+  state.counts[p.id]=n;state.last=p.id;persist();updateDetail(p);
+}
+
+/* ---------- stitch chart (drawn from the written rows) ---------- */
+const CHARTS={"atmosphere":["dd.vv","vvm.m..","dd...vv","vvm.yrm..","dd.....vv","vvm.....m..","dd.......vv","vvm.......m..","dd.........vv","vvm.yryryryrm..","dd...........vv","vvm...........m..","dd.............vv","vvm.............m..","dd...............vv","vvm.yryryryryryryrm..","dd.................vv","vvm.................m..","dd...................vv","vvm...................m..","dd.....................vv","vvm.yryryryryryryryryryrm..","dd.......................vv","vvm.......................m..","dd.........................vv","vvm.........................m..","dd...........................vv","vvm.yryryryryryryryryryryryryrm..","dd.............................vv","vvm.............................m..","dd...............................vv","vvm...............................m..","dd.................................vv","vvm.yryryryryryryryryryryryryryryryrm..","dd...................................vv","vvm...................................m..","dd.....................................vv","vvm.....................................m..","dd.......................................vv","vvm.yryryryryryryryryryryryryryryryryryryrm..","dd.........................................vv","vvm.........................................m..","dd...........................................vv","vvm...........................................m..","dd.............................................vv","vvm.yryryryryryryryryryryryryryryryryryryryryryrm..","dd...............................................vv","vvm...............................................m..","dd.................................................vv","vvm.................................................m..","dd...................................................vv","vvm.yryryryryryryryryryryryryryryryryryryryryryryryryrm..","dd.....................................................vv","vvm.....................................................m..","dd.......................................................vv","vvm.......................................................m..","dd.........................................................vv","vvm.yryryryryryryryryryryryryryryryryryryryryryryryryryryryrm..","dd...........................................................vv","vvm...........................................................m..","dd.............................................................vv","vvm.............................................................m..","dd...............................................................vv","vvm.yryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryrm..","dd.................................................................vv","vvm.................................................................m..","dd...................................................................vv","vvm...................................................................m..","dd.....................................................................vv","vvm.yryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryrm..","dd.......................................................................vv","vvm.......................................................................m..","dd.........................................................................vv","vvm.........................................................................m..","dd...........................................................................vv"],"spice-market":["dd.vv","vvm.m..","dd...vv","vvmycym..","dd.....vv","vvm.ycy.m..","dd.......vv","vvm..ycy..m..","dd.........vv","vvmycy...ycym..","dd...........vv","vvm.ycy...ycy.m..","dd.............vv","vvm..ycy...ycy..m..","dd...............vv","vvmycy...ycy...ycym..","dd.................vv","vvm.ycy...ycy...ycy.m..","dd...................vv","vvm..ycy...ycy...ycy..m..","dd.....................vv","vvmycy...ycy...ycy...ycym..","dd.......................vv","vvm.ycy...ycy...ycy...ycy.m..","dd.........................vv","vvm..ycy...ycy...ycy...ycy..m..","dd...........................vv","vvmycy...ycy...ycy...ycy...ycym..","dd.............................vv","vvm.ycy...ycy...ycy...ycy...ycy.m..","dd...............................vv","vvm..ycy...ycy...ycy...ycy...ycy..m..","dd.................................vv","vvmycy...ycy...ycy...ycy...ycy...ycym..","dd...................................vv","vvm.ycy...ycy...ycy...ycy...ycy...ycy.m..","dd.....................................vv","vvm..ycy...ycy...ycy...ycy...ycy...ycy..m..","dd.......................................vv","vvmycy...ycy...ycy...ycy...ycy...ycy...ycym..","dd.........................................vv","vvm.ycy...ycy...ycy...ycy...ycy...ycy...ycy.m..","dd...........................................vv","vvm..ycy...ycy...ycy...ycy...ycy...ycy...ycy..m..","dd.............................................vv","vvmycy...ycy...ycy...ycy...ycy...ycy...ycy...ycym..","dd...............................................vv","vvm.ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy.m..","dd.................................................vv","vvm..ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy..m..","dd...................................................vv","vvmycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycym..","dd.....................................................vv","vvm.ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy.m..","dd.......................................................vv","vvm..ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy..m..","dd.........................................................vv","vvmycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycym..","dd...........................................................vv","vvm.ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy.m..","dd.............................................................vv","vvm..ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy..m..","dd...............................................................vv","vvmycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycym..","dd.................................................................vv","vvm.ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy.m..","dd...................................................................vv","vvm..ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy...ycy..m..","dd.....................................................................vv"],"in-bloom":["dd.vv","vvm.m..","dd...vv","vvm.yrm..","dd.....vv","vvmly.yrm..","dd.......vv","vvmly...yrm..","dd.........vv","vvm...ycy...m..","dd...........vv","vvm.yr......yrm..","dd.............vv","vvmly.yr...ly.yrm..","dd...............vv","vvmly...yr.ly...yrm..","dd.................vv","vvm...ycy.....ycy...m..","dd...................vv","vvm.yr......yr......yrm..","dd.....................vv","vvmly.yr...ly.yr...ly.yrm..","dd.......................vv","vvmly...yr.ly...yr.ly...yrm..","dd.........................vv","vvm...ycy..ycy........ycy...m..","dd...........................vv","vvm.yr......yr......yr......yrm..","dd.............................vv","vvmly.yr...ly.yr...ly.yr...ly.yrm..","dd...............................vv","vvmly...yr.ly...yr.ly...yr.ly...yrm..","dd.................................vv","vvm...ycy..........ycy........ycy...m..","dd...................................vv","vvm.yr......yr......yr......yr......yrm..","dd.....................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd.......................................vv","vvmly...yr.ly...yr.ly...yr.ly...yr.ly...yrm..","dd.........................................vv","vvm...ycy.......ycy........ycy........ycy...m..","dd...........................................vv","vvm.yr......yr......yr......yr......yr......yrm..","dd.............................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd...............................................vv","vvmly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yrm..","dd.................................................vv","vvm...ycy....ycy........ycy........ycy........ycy...m..","dd...................................................vv","vvm.yr......yr......yr......yr......yr......yr......yrm..","dd.....................................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd.......................................................vv","vvmly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yrm..","dd.........................................................vv","vvm...ycy.ycy........ycy........ycy........ycy........ycy...m..","dd...........................................................vv","vvm.yr......yr......yr......yr......yr......yr......yr......yrm..","dd.............................................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd...............................................................vv","vvmly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yrm..","dd.................................................................vv","vvm...ycy.........ycy........ycy........ycy........ycy........ycy...m..","dd...................................................................vv","vvm.yr......yr......yr......yr......yr......yr......yr......yr......yrm..","dd.....................................................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd.......................................................................vv","vvmly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yr.ly...yrm..","dd.........................................................................vv","vvm...ycy......ycy........ycy........ycy........ycy........ycy........ycy...m..","dd...........................................................................vv","vvm...........................................................................m..","dd.............................................................................vv"],"flower-bed":["dd.vv","vvm.m..","dd...vv","vvm...m..","dd.....vv","vvmly.yrm..","dd.......vv","vvm.......m..","dd.........vv","vvm..ly.yr..m..","dd...........vv","vvm...........m..","dd.............vv","vvmly.yr...ly.yrm..","dd...............vv","vvm...............m..","dd.................vv","vvm..ly.yr...ly.yr..m..","dd...................vv","vvm...................m..","dd.....................vv","vvmly.yr...ly.yr...ly.yrm..","dd.......................vv","vvm.......................m..","dd.........................vv","vvm..ly.yr...ly.yr...ly.yr..m..","dd...........................vv","vvm...........................m..","dd.............................vv","vvmly.yr...ly.yr...ly.yr...ly.yrm..","dd...............................vv","vvm...............................m..","dd.................................vv","vvm..ly.yr...ly.yr...ly.yr...ly.yr..m..","dd...................................vv","vvm...................................m..","dd.....................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd.......................................vv","vvm.......................................m..","dd.........................................vv","vvm..ly.yr...ly.yr...ly.yr...ly.yr...ly.yr..m..","dd...........................................vv","vvm...........................................m..","dd.............................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd...............................................vv","vvm...............................................m..","dd.................................................vv","vvm..ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr..m..","dd...................................................vv","vvm...................................................m..","dd.....................................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd.......................................................vv","vvm.......................................................m..","dd.........................................................vv","vvm..ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr..m..","dd...........................................................vv","vvm...........................................................m..","dd.............................................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd...............................................................vv","vvm...............................................................m..","dd.................................................................vv","vvm..ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr..m..","dd...................................................................vv","vvm...................................................................m..","dd.....................................................................vv","vvmly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yrm..","dd.......................................................................vv","vvm.......................................................................m..","dd.........................................................................vv","vvm..ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr..m..","dd...........................................................................vv","vvm...........................................................................m..","dd.............................................................................vv"],"summer-veil":["ddvv","vvy..","dd.vv","vvy.y..","dd...vv","vvy...y..","dd.....vv","vvy..yr.y..","dd.......vv","vvy.ly.yr.y..","dd.........vv","vvy....yr...y..","dd...........vv","vvy...........y..","dd.............vv","vvy..yr......yr.y..","dd...............vv","vvy.ly.yr...ly.yr.y..","dd.................vv","vvy....yr......yr...y..","dd...................vv","vvy...................y..","dd.....................vv","vvy..yr......yr......yr.y..","dd.......................vv","vvy.ly.yr...ly.yr...ly.yr.y..","dd.........................vv","vvy....yr......yr......yr...y..","dd...........................vv","vvy...........................y..","dd.............................vv","vvy..yr......yr......yr......yr.y..","dd...............................vv","vvy.ly.yr...ly.yr...ly.yr...ly.yr.y..","dd.................................vv","vvy....yr......yr......yr......yr...y..","dd...................................vv","vvy...................................y..","dd.....................................vv","vvy..yr......yr......yr......yr......yr.y..","dd.......................................vv","vvy.ly.yr...ly.yr...ly.yr...ly.yr...ly.yr.y..","dd.........................................vv","vvy....yr......yr......yr......yr......yr...y..","dd...........................................vv","vvy...........................................y..","dd.............................................vv","vvy..yr......yr......yr......yr......yr......yr.y..","dd...............................................vv","vvy.ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr.y..","dd.................................................vv","vvy....yr......yr......yr......yr......yr......yr...y..","dd...................................................vv","vvy...................................................y..","dd.....................................................vv","vvy..yr......yr......yr......yr......yr......yr......yr.y..","dd.......................................................vv","vvy.ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr.y..","dd.........................................................vv","vvy....yr......yr......yr......yr......yr......yr......yr...y..","dd...........................................................vv","vvy...........................................................y..","dd.............................................................vv","vvy..yr......yr......yr......yr......yr......yr......yr......yr.y..","dd...............................................................vv","vvy.ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr.y..","dd.................................................................vv","vvy....yr......yr......yr......yr......yr......yr......yr......yr...y..","dd...................................................................vv","vvy...................................................................y..","dd.....................................................................vv","vvy..yr......yr......yr......yr......yr......yr......yr......yr......yr.y..","dd.......................................................................vv","vvy.ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr.y..","dd.........................................................................vv","vvy....yr......yr......yr......yr......yr......yr......yr......yr......yr...y..","dd...........................................................................vv","vvy...........................................................................y..","dd.............................................................................vv","vvy..yr......yr......yr......yr......yr......yr......yr......yr......yr......yr.y..","dd...............................................................................vv","vvy.ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr...ly.yr.y..","dd.................................................................................vv","vvy....yr......yr......yr......yr......yr......yr......yr......yr......yr......yr...y..","dd...................................................................................vv","vvy...................................................................................y..","dd.....................................................................................vv"],"country-road":["ddvv","vvy..","dd.vv","vvy.y..","dd...vv","vvy...y..","dd.....vv","vvy.....y..","dd.......vv","vvy.......y..","dd.........vv","vvy.........y..","dd...........vv","vvy...lysyr...y..","dd.............vv","vvy...ly.s.yr...y..","dd...............vv","vvy...ly..s..yr...y..","dd.................vv","vvy...ly...s...yr...y..","dd...................vv","vvy...ly....s....yr...y..","dd.....................vv","vvy...ly...lysyr...yr...y..","dd.......................vv","vvy...ly...ly.s.yr...yr...y..","dd.........................vv","vvy...ly...ly..s..yr...yr...y..","dd...........................vv","vvy...ly...ly...s...yr...yr...y..","dd.............................vv","vvy...ly...ly....s....yr...yr...y..","dd...............................vv","vvy...ly...ly...lysyr...yr...yr...y..","dd.................................vv","vvy...ly...ly...ly.s.yr...yr...yr...y..","dd...................................vv","vvy...ly...ly...ly..s..yr...yr...yr...y..","dd.....................................vv","vvy...ly...ly...ly...s...yr...yr...yr...y..","dd.......................................vv","vvy...ly...ly...ly....s....yr...yr...yr...y..","dd.........................................vv","vvy...ly...ly...ly...lysyr...yr...yr...yr...y..","dd...........................................vv","vvy...ly...ly...ly...ly.s.yr...yr...yr...yr...y..","dd.............................................vv","vvy...ly...ly...ly...ly..s..yr...yr...yr...yr...y..","dd...............................................vv","vvy...ly...ly...ly...ly...s...yr...yr...yr...yr...y..","dd.................................................vv","vvy...ly...ly...ly...ly....s....yr...yr...yr...yr...y..","dd...................................................vv","vvy...ly...ly...ly...ly...lysyr...yr...yr...yr...yr...y..","dd.....................................................vv","vvy...ly...ly...ly...ly...ly.s.yr...yr...yr...yr...yr...y..","dd.......................................................vv","vvy...ly...ly...ly...ly...ly..s..yr...yr...yr...yr...yr...y..","dd.........................................................vv","vvy...ly...ly...ly...ly...ly...s...yr...yr...yr...yr...yr...y..","dd...........................................................vv","vvy...ly...ly...ly...ly...ly....s....yr...yr...yr...yr...yr...y..","dd.............................................................vv","vvy...ly...ly...ly...ly...ly...lysyr...yr...yr...yr...yr...yr...y..","dd...............................................................vv","vvy...ly...ly...ly...ly...ly...ly.s.yr...yr...yr...yr...yr...yr...y..","dd.................................................................vv","vvy...ly...ly...ly...ly...ly...ly..s..yr...yr...yr...yr...yr...yr...y..","dd...................................................................vv","vvy...ly...ly...ly...ly...ly...ly...s...yr...yr...yr...yr...yr...yr...y..","dd.....................................................................vv","vvy...ly...ly...ly...ly...ly...ly....s....yr...yr...yr...yr...yr...yr...y..","dd.......................................................................vv","vvy...ly...ly...ly...ly...ly...ly...lysyr...yr...yr...yr...yr...yr...yr...y..","dd.........................................................................vv","vvy...ly...ly...ly...ly...ly...ly...ly.s.yr...yr...yr...yr...yr...yr...yr...y..","dd...........................................................................vv","vvy...ly...ly...ly...ly...ly...ly...ly..s..yr...yr...yr...yr...yr...yr...yr...y..","dd.............................................................................vv","vvy...ly...ly...ly...ly...ly...ly...ly...s...yr...yr...yr...yr...yr...yr...yr...y..","dd...............................................................................vv","vvy...ly...ly...ly...ly...ly...ly...ly....s....yr...yr...yr...yr...yr...yr...yr...y..","dd.................................................................................vv"],"canyon-clay":["ddvv","vvy..","dd.vv","vvy.y..","dd...vv","vvy...y..","dd.....vv","vvy..yr.y..","dd.......vv","vvy.......y..","dd.........vv","vvy..yr..yr.y..","dd...........vv","vvy...........y..","dd.............vv","vvy..yr..yr..yr.y..","dd...............vv","vvy...............y..","dd.................vv","vvy..yr..yr..yr..yr.y..","dd...................vv","vvy...................y..","dd.....................vv","vvy..yr..yr..yr..yr..yr.y..","dd.......................vv","vvy.......................y..","dd.........................vv","vvy..yr..yr..yr..yr..yr..yr.y..","dd...........................vv","vvy...........................y..","dd.............................vv","vvy..yr..yr..yr..yr..yr..yr..yr.y..","dd...............................vv","vvy...............................y..","dd.................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd...................................vv","vvy...................................y..","dd.....................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd.......................................vv","vvy.......................................y..","dd.........................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd...........................................vv","vvy...........................................y..","dd.............................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd...............................................vv","vvy...............................................y..","dd.................................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd...................................................vv","vvy...................................................y..","dd.....................................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd.......................................................vv","vvy.......................................................y..","dd.........................................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd...........................................................vv","vvy...........................................................y..","dd.............................................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd...............................................................vv","vvy...............................................................y..","dd.................................................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd...................................................................vv","vvy...................................................................y..","dd.....................................................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd.......................................................................vv","vvy.......................................................................y..","dd.........................................................................vv","vvy..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr..yr.y..","dd...........................................................................vv","vvy...........................................................................y..","dd.............................................................................vv"]};
+P.forEach(p=>{p.chart=CHARTS[p.id]||[]});
+const ZS=[8,10,12,14,16,20,24],GUT=30;
+let zoomI=3;
+try{const z=Number(localStorage.getItem('bandanaTracker.zoom'));if(ZS.includes(z))zoomI=ZS.indexOf(z)}catch(e){}
+const cellPx=()=>ZS[zoomI];
+const LEG=[['.','Knit on RS rows, purl on WS rows'],['d','Knit on WS rows (the edge stitches)'],['v','Slip with yarn in front'],['y','Yarn over'],['r','k2tog, leans right'],['l','ssk, leans left'],['c','k3tog, centred decrease'],['m','Make 1 (M1R or M1L)'],['s','Central stitch (CS)']];
+function glyphSVG(g,x,y,c){
+  const px=f=>(x+f*c).toFixed(1),py=f=>(y+f*c).toFixed(1),u=v=>(c*v).toFixed(1);
+  switch(g){
+    case 'd':return `<circle class="gd" cx="${px(.5)}" cy="${py(.5)}" r="${u(.13)}"/>`;
+    case 'v':return `<path class="gl" d="M${px(.24)} ${py(.28)}L${px(.5)} ${py(.74)}L${px(.76)} ${py(.28)}"/>`;
+    case 'y':return `<circle class="gl" cx="${px(.5)}" cy="${py(.5)}" r="${u(.2)}"/>`;
+    case 'r':return `<path class="gl" d="M${px(.22)} ${py(.8)}L${px(.78)} ${py(.2)}"/>`;
+    case 'l':return `<path class="gl" d="M${px(.22)} ${py(.2)}L${px(.78)} ${py(.8)}"/>`;
+    case 'c':return `<path class="gl" d="M${px(.2)} ${py(.82)}L${px(.5)} ${py(.2)}L${px(.8)} ${py(.82)}"/>`;
+    case 'm':return `<rect class="gm" x="${px(.04)}" y="${py(.04)}" width="${u(.92)}" height="${u(.92)}"/><path class="gl" d="M${px(.5)} ${py(.24)}V${py(.76)}M${px(.24)} ${py(.5)}H${px(.76)}"/>`;
+    case 's':return `<path class="gl" d="M${px(.5)} ${py(.1)}V${py(.9)}"/>`;
+  }
+  return '';
+}
+function chartHTML(p){
+  const used=new Set(p.chart.join(''));
+  const key=LEG.filter(l=>l[0]==='.'||used.has(l[0])).map(l=>`<li><svg class="chart" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect class="cell" x="1.5" y="1.5" width="21" height="21"/>${glyphSVG(l[0],1.5,1.5,21)}</svg><span>${esc(l[1])}</span></li>`).join('');
+  return `<details class="chartp" id="chartd" ${ui.chartOpen?'open':''}><summary>Chart</summary><div class="chartin">
+   <div class="chartbar"><span id="chartdir"></span><span class="zoom"><button id="zout" aria-label="Zoom out">−</button><button id="zin" aria-label="Zoom in">+</button></span></div>
+   <div id="chartsvg" class="chartbox"></div>
+   <ul class="legend">${key}</ul>
+   <p class="chartnote">Drawn from the written rows, since the original page has no chart. Each box is one stitch of the finished row. Row 1 is at the bottom and rows are centred. Read RS rows right to left and WS rows left to right. Tap a row to set it.</p></div></details>`;
+}
+function drawChart(p){
+  const host=document.getElementById('chartsvg');if(!host)return;
+  const c=cellPx(),rows=p.chart,n=rows.length,maxW=Math.max(...rows.map(r=>r.length));
+  const W=maxW*c+GUT*2,H=n*c,fs=Math.min(11,Math.round(c*.7));
+  let s=`<svg class="chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Stitch chart for ${esc(p.name)}, ${n} rows">`;
+  rows.forEach((r,i)=>{
+    const y=(n-1-i)*c,x0=GUT+(maxW-r.length)*c/2,rs=p.rows[i].side==='RS';
+    s+=`<rect class="cell" x="${x0}" y="${y}" width="${r.length*c}" height="${c}"/>`;
+    let v='';for(let k=1;k<r.length;k++)v+=`M${x0+k*c} ${y}v${c}`;
+    s+=`<path class="gr" d="${v}"/>`;
+    for(let k=0;k<r.length;k++){if(r[k]!=='.')s+=glyphSVG(r[k],x0+k*c,y,c)}
+    s+=rs?`<text class="num" x="${GUT+maxW*c+4}" y="${y+c/2}" font-size="${fs}">${i+1}</text>`
+          :`<text class="num" x="${GUT-4}" y="${y+c/2}" font-size="${fs}" text-anchor="end">${i+1}</text>`;
+  });
+  s+=`<rect id="wash" class="wash" x="0" width="${W}" height="0" y="${H}"/><rect id="hl" class="hl" x="0.75" width="${W-1.5}" height="${c}" y="0" visibility="hidden"/></svg>`;
+  host.innerHTML=s;
+  host.scrollLeft=Math.max(0,(W-host.clientWidth)/2);
+}
+function updateChart(p){
+  const host=document.getElementById('chartsvg');if(!host||!host.firstChild)return;
+  const c=cellPx(),n=p.chart.length,k=cnt(p.id);
+  const knitted=k>n?n:Math.max(0,k-1);
+  const wash=document.getElementById('wash'),hl=document.getElementById('hl');
+  wash.setAttribute('y',(n-knitted)*c);wash.setAttribute('height',knitted*c);
+  const dir=document.getElementById('chartdir');
+  if(k>=1&&k<=n){
+    hl.setAttribute('y',(n-k)*c);hl.setAttribute('visibility','visible');
+    const side=p.rows[k-1].side;
+    dir.textContent='Row '+k+' · '+side+' · read '+(side==='RS'?'right to left':'left to right');
+    host.scrollTop=Math.max(0,(n-k)*c+c/2-host.clientHeight*.6);
+  }else{
+    hl.setAttribute('visibility','hidden');
+    dir.textContent=k===0?'Cast on '+p.cast+' at the point':'Body done';
+    host.scrollTop=k===0?host.scrollHeight:0;
+  }
+  document.getElementById('zout').disabled=zoomI===0;
+  document.getElementById('zin').disabled=zoomI===ZS.length-1;
+}
+function zoom(p,d){
+  const z=Math.max(0,Math.min(ZS.length-1,zoomI+d));if(z===zoomI)return;
+  zoomI=z;try{localStorage.setItem('bandanaTracker.zoom',String(ZS[z]))}catch(e){}
+  drawChart(p);updateChart(p);
+}
+document.addEventListener('click',e=>{
+  const host=e.target.closest&&e.target.closest('#chartsvg');if(!host)return;
+  const p=P.find(x=>x.id===routeId());const sv=host.querySelector('svg');if(!p||!sv)return;
+  const c=cellPx(),n=p.chart.length,row=n-Math.floor((e.clientY-sv.getBoundingClientRect().top)/c);
+  if(row>=1&&row<=n){wake();setCount(p,row)}
+});
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const id=routeId();if(id==='home')return;const p=P.find(x=>x.id===id);
+  const t=e.target.closest('button');if(!t)return;
+  wake();
+  if(t.id==='plus')setCount(p,cnt(p.id)+1);
+  else if(t.id==='minus')setCount(p,cnt(p.id)-1);
+  else if(t.classList.contains('rowbtn'))setCount(p,Number(t.dataset.n));
+  else if(t.id==='zin'||t.id==='zout'){zoom(p,t.id==='zin'?1:-1)}
+  else if(t.id==='ask'){ui.confirm=true;renderReset(p)}
+  else if(t.id==='no'){ui.confirm=false;renderReset(p)}
+  else if(t.id==='yes'){state.counts[p.id]=0;state.checks[p.id]=FINISH.map(()=>false);persist();ui.confirm=false;detail(p.id)}
+});
+document.addEventListener('change',e=>{
+  const c=e.target;if(!(c.matches&&c.matches('.fin input')))return;
+  const p=P.find(x=>x.id===routeId());if(!p)return;
+  state.checks[p.id][Number(c.dataset.k)]=c.checked;state.last=p.id;persist();
+});
+document.addEventListener('toggle',e=>{
+  const p=P.find(x=>x.id===routeId());if(!p)return;
+  if(e.target.id==='rowsd'){ui.rowsOpen=e.target.open;if(e.target.open)updateDetail(p)}
+  else if(e.target.id==='chartd'){ui.chartOpen=e.target.open;if(e.target.open){drawChart(p);updateChart(p)}}
+},true);
+document.addEventListener('keydown',e=>{
+  const id=routeId();if(id==='home')return;
+  if(e.target.closest&&e.target.closest('input,textarea,select,summary,button'))return;
+  const p=P.find(x=>x.id===id);
+  if(e.key==='+'||e.key==='ArrowRight'){setCount(p,cnt(p.id)+1);e.preventDefault()}
+  else if(e.key==='-'||e.key==='ArrowLeft'){setCount(p,cnt(p.id)-1);e.preventDefault()}
+});
+let wl=null,wantWake=false;
+async function wake(){wantWake=true;if(wl||!navigator.wakeLock)return;try{wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}catch(e){wl=null}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&wantWake&&!wl)wake()});
+
+function render(){const id=routeId();ui.confirm=false;id==='home'?home():detail(id)}
+window.addEventListener('hashchange',render);
+render();
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){})})}
+</script>
+</body>
+</html>
