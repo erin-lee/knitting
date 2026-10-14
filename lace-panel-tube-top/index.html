@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lace Panel Tube Top — Row Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="theme-color" content="#f2f5f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111715" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lace Panel">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html, body { margin: 0; }
+[hidden] { display: none !important; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Gloock&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one screen, one counter. A four-step strip (cast on, top border, body, bottom border) shows where you are, the + button walks you through the whole piece, and the lace chart lights the current round. */
+:root {
+  --bg: #f2f5f3;
+  --surface: #ffffff;
+  --surface2: #e6ede9;
+  --ink: #1b2622;
+  --muted: #5a6963;
+  --line: #d0dbd5;
+  --accent: #2e6a54;
+  --accent-ink: #ffffff;
+  --lace: #9a5d0c;
+  --lace-bg: #f7e9d0;
+  --band: rgba(46, 106, 84, 0.20);
+  --wash: rgba(46, 106, 84, 0.08);
+  --font-display: "Gloock", Georgia, "Times New Roman", serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111715; --surface: #1a2320; --surface2: #243029; --ink: #e5eee9; --muted: #9aaba3;
+    --line: #2f3e38; --accent: #6fc09e; --accent-ink: #0c1a14; --lace: #e3a94f; --lace-bg: #3a2e16;
+    --band: rgba(111, 192, 158, 0.30); --wash: rgba(111, 192, 158, 0.11);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111715; --surface: #1a2320; --surface2: #243029; --ink: #e5eee9; --muted: #9aaba3;
+  --line: #2f3e38; --accent: #6fc09e; --accent-ink: #0c1a14; --lace: #e3a94f; --lace-bg: #3a2e16;
+  --band: rgba(111, 192, 158, 0.30); --wash: rgba(111, 192, 158, 0.11);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.45;
+  padding-block: 8px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+.wrap { max-width: 560px; margin: 0 auto; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+h1 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; }
+.eyebrow { font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+.head { padding: 16px 2px 10px; }
+.head h1 { font-size: 32px; line-height: 1.1; margin-top: 2px; }
+
+.materials { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin: 4px 0 12px; }
+.materials summary { list-style: none; cursor: pointer; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 48px; }
+.materials summary::-webkit-details-marker { display: none; }
+.materials summary .sum { font-size: 14px; color: var(--muted); min-width: 0; }
+.materials summary .sum b { color: var(--ink); font-weight: 600; }
+.materials summary .chev { color: var(--accent); font-weight: 700; flex: none; font-size: 13px; }
+.materials[open] summary .chev::after { content: "Hide"; }
+.materials:not([open]) summary .chev::after { content: "Details"; }
+.materials dl { margin: 0; padding: 2px 16px 14px; display: grid; grid-template-columns: 92px 1fr; gap: 8px 12px; }
+.materials dt { color: var(--muted); font-size: 14px; }
+.materials dd { margin: 0; font-size: 15px; }
+.materials dd small { display: block; color: var(--muted); font-size: 13px; }
+
+.stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+.stage { min-height: 52px; padding: 6px 4px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 600; line-height: 1.2; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; }
+.stage small { font-weight: 500; font-size: 11px; font-family: var(--font-mono); }
+.stage.done { color: var(--ink); background: var(--surface2); }
+.stage.now { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+.counter { display: grid; grid-template-columns: 76px 1fr 112px; gap: 12px; align-items: center; margin: 6px 0 14px; }
+.btn-minus { height: 76px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); font-size: 34px; line-height: 1; color: var(--muted); }
+.btn-plus { height: 112px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 56px; line-height: 1; font-weight: 500;
+  box-shadow: 0 0 0 6px var(--wash), 0 8px 22px -8px var(--accent); }
+.btn-plus:active { transform: scale(0.96); }
+.btn-plus:disabled, .btn-minus:disabled { opacity: 0.4; box-shadow: none; cursor: default; }
+.num { text-align: center; min-width: 0; }
+.num .big { font-family: var(--font-mono); font-weight: 600; font-size: 64px; line-height: 1; font-variant-numeric: tabular-nums; }
+.num .lbl { color: var(--muted); font-size: 14px; margin-top: 6px; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+.panel.lace { border-color: var(--lace); background: var(--lace-bg); }
+.chip { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; background: var(--surface2); color: var(--muted); }
+.panel.lace .chip { background: var(--lace); color: var(--surface); }
+.title-line { font-family: var(--font-display); font-size: 22px; margin: 8px 0 0; }
+.instr { font-family: var(--font-mono); font-size: 17px; line-height: 1.55; margin: 8px 0 6px; overflow-wrap: anywhere; }
+.sts { font-size: 14px; color: var(--muted); }
+.note { font-size: 14px; color: var(--muted); margin: 8px 0 0; }
+.chart-box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 10px 10px; margin-bottom: 14px; }
+.chart-box .eyebrow { padding: 0 6px 6px; }
+.chart-box svg { display: block; width: 100%; height: auto; max-width: 100%; }
+.chart-box .hint { font-size: 13px; color: var(--muted); padding: 6px 6px 0; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 10px 6px 0; font-size: 13px; color: var(--muted); }
+.key span { display: inline-flex; align-items: center; gap: 6px; }
+.key svg { width: 18px; height: 18px; flex: none; }
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-bottom: 14px; }
+.list h3 { margin: 0; padding: 12px 16px 8px; font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.item { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 16px; border-top: 1px solid var(--line); min-height: 46px; }
+.item .tag { font-size: 12px; color: var(--muted); }
+.item.lace .tag { color: var(--lace); font-weight: 600; }
+.item.past { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; opacity: 0.7; }
+.item.now { background: var(--accent); color: var(--accent-ink); position: sticky; bottom: 0; font-weight: 600; opacity: 1; text-decoration: none; }
+.item.now .tag { color: var(--accent-ink); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.ghost { padding: 11px 16px; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; }
+.ghost.solid { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--surface2); }
+.finished { text-align: center; padding: 14px 16px; }
+.finished b { font-family: var(--font-display); font-weight: 400; font-size: 26px; }
+.sync { margin-top: 18px; font-size: 13px; color: var(--muted); text-align: center; }
+
+.straps { margin: 0 0 14px; }
+.strap-body { padding: 0 16px 14px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 2px; }
+.seg button { min-height: 52px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; line-height: 1.2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; }
+.seg button small { font-weight: 500; font-size: 12px; color: var(--muted); }
+.seg button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.seg button.on small { color: var(--accent-ink); }
+.step { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; padding: 11px 0; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.45; }
+.step.on > span:last-child { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+.box { width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--muted); display: grid; place-items: center; flex: none; color: var(--accent-ink); margin-top: 1px; }
+.box.on { background: var(--accent); border-color: var(--accent); }
+.tips { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: 15px; line-height: 1.45; }
+.tips b { font-weight: 700; }
+
+/* Chart (SVG) */
+.chart .g { stroke: var(--line); stroke-width: 1; }
+.chart .gb { stroke: var(--muted); stroke-width: 1; fill: none; }
+.chart .blk { fill: var(--surface2); }
+.chart .wash { fill: var(--wash); }
+.chart .band { fill: var(--band); stroke: var(--accent); stroke-width: 2; }
+.chart .mk { stroke: var(--accent); stroke-width: 2.5; }
+.chart .sf { fill: var(--ink); stroke: none; }
+.chart .sn { fill: none; stroke: var(--ink); stroke-width: 1.8; }
+.chart .sl { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; fill: none; }
+.chart .t { font-family: var(--font-mono); fill: var(--muted); font-size: 11px; }
+.chart .tn { font-family: var(--font-mono); fill: var(--ink); font-size: 12px; font-weight: 600; }
+.chart .tna { font-family: var(--font-mono); fill: var(--accent-ink); font-size: 12px; font-weight: 700; }
+.chart .pill { fill: var(--accent); }
+.chart .hit { fill: transparent; cursor: pointer; }
+.chart .hd { font-family: var(--font-body); fill: var(--accent); font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (max-width: 380px) {
+  .counter { grid-template-columns: 64px 1fr 96px; gap: 8px; }
+  .btn-minus { height: 64px; } .btn-plus { height: 96px; font-size: 48px; } .num .big { font-size: 52px; }
+  .stage { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+(function () {
+  var KEY = "lptt-progress-v2";
+  var DOCPATH = "progress/lace-panel-tube-top";
+  var FILL = 36;
+
+  /* ---------- pattern data ---------- */
+  var PLAIN = ['P','P','K','K','K','K','P','K','K','K','K','P','P'];
+  var R2 = ['P','P','K','YO','K','K2TOG','P','SKPO','K','YO','K','P','P'];
+  var R6 = ['P','P','K','K','K2TOG','YO','P','YO','SKPO','K','K','P','P'];
+  var R8 = ['P','P','K','K2TOG','YO','K','P','K','YO','SKPO','K','P','P'];
+  var R10 = ['P','P','K2TOG','YO','K','K','P','K','K','YO','SKPO','P','P'];
+  var CHART = [PLAIN, R2, PLAIN, R2, PLAIN, R6, PLAIN, R8, PLAIN, R10];
+  var base = "P2, K4, P1, K4, P2, K" + FILL;
+  var TXT = [
+    base,
+    "P2, K1, YO, K1, K2TOG, P1, SKPO, K1, YO, K1, P2, K" + FILL,
+    base,
+    "P2, K1, YO, K1, K2TOG, P1, SKPO, K1, YO, K1, P2, K" + FILL,
+    base,
+    "P2, K2, K2TOG, YO, P1, YO, SKPO, K2, P2, K" + FILL,
+    base,
+    "P2, K1, K2TOG, YO, K1, P1, K1, YO, SKPO, K1, P2, K" + FILL,
+    base,
+    "P2, K2TOG, YO, K2, P1, K2, YO, SKPO, P2, K" + FILL
+  ];
+  function isLace(r) { return r % 2 === 0; }
+
+  var STAGES = ["cast", "top", "body", "bottom"];
+  var NAMES = { cast: "Cast on", top: "Top border", body: "Body", bottom: "Bottom border" };
+  var ROWS = { top: 6, bottom: 7 };
+
+  var STRAPS = {
+    icord: {
+      name: "Knit-on I-cord", blurb: "Clean, spaghetti-strap look.",
+      steps: [
+        "Mark where each strap sits on the front top edge, then mirror those spots on the back.",
+        "With the right side facing, pick up 3 or 4 stitches along the cast-on edge at the front marker, going into the cast-on bumps or the first garter ridge.",
+        "Work I-cord (knit the row, slide the stitches back to the right end of the needle, repeat) to the length you need.",
+        "Attach the free end to the back top edge. You can sew it down, or pick up the same number of stitches at the back marker and join them with a three-needle bind off."
+      ]
+    },
+    garter: {
+      name: "Garter-stitch flat", blurb: "Matches the top border.",
+      steps: [
+        "Pick up 4 to 6 stitches along the top edge at each marker.",
+        "Work garter stitch back and forth to length.",
+        "Join to the back with a three-needle bind off, or bind off and sew down."
+      ]
+    }
+  };
+  var STRAP_TIPS = [
+    ["Length", "Pin the straps on and try the top on. A 30″ bust usually ends up around 11–13″ from the front edge over the shoulder to the back edge, but measure on the wearer. Knit straps lengthen with wear, so finish them about ½″ shorter than what feels right."],
+    ["Width", "Pick stitch counts for the width you want (about 1″ is typical for garter straps). The pattern doesn’t give a gauge, so check against your swatch."],
+    ["Placement", "Keep the front straps roughly 3½–4″ either side of center front. The two lace panels are 49 stitches apart, which puts them exactly opposite each other, so a panel can sit at center front with the other at center back. Pin the straps in place before committing."],
+    ["Stability", "A lace tube top can sag once straps take the weight. If it does, weave a strip of clear elastic or a ribbon along the inside of the top border."]
+  ];
+
+  /* ---------- state ---------- */
+  function blank() {
+    return { stage: "cast", v: { top: 1, body: 1, bottom: 1 },
+      straps: { opt: "icord", done: { icord: [false, false, false, false], garter: [false, false, false] } }, updatedAt: 0 };
+  }
+  function normalize(d) {
+    var s = blank();
+    if (d && typeof d === "object") {
+      if (STAGES.indexOf(d.stage) >= 0 || d.stage === "done") s.stage = d.stage;
+      var v = d.v || {};
+      ["top", "body", "bottom"].forEach(function (k) {
+        var n = Math.floor(Number(v[k]));
+        if (isFinite(n) && n >= 1) s.v[k] = k === "body" ? n : Math.min(n, ROWS[k]);
+      });
+      var sp = d.straps || {};
+      if (sp.opt === "icord" || sp.opt === "garter") s.straps.opt = sp.opt;
+      var dn = sp.done || {};
+      ["icord", "garter"].forEach(function (k) {
+        var a = dn[k];
+        if (Array.isArray(a)) s.straps.done[k] = s.straps.done[k].map(function (_, i) { return a[i] === true; });
+      });
+      s.updatedAt = Number(d.updatedAt) || 0;
+    }
+    return s;
+  }
+  var state = blank();
+  try { var raw = localStorage.getItem(KEY); if (raw) state = normalize(JSON.parse(raw)); } catch (e) {}
+  function localStore() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function stageIdx() { return state.stage === "done" ? 4 : STAGES.indexOf(state.stage); }
+
+  /* ---------- sync ---------- */
+  var ref = null, dirty = false, writing = false, timer = null, syncMode = "local";
+  function syncText() {
+    return {
+      local: "Saved on this device",
+      saving: "Saving…",
+      synced: "Saved to your account, so it follows you to other devices",
+      error: "Could not save to your account. Progress is kept on this device."
+    }[syncMode];
+  }
+  function setSync(m) { syncMode = m; var el = document.getElementById("sync"); if (el) el.textContent = syncText(); }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function schedule() {
+    if (!ref) { setSync("local"); return; }
+    dirty = true; setSync("saving"); clearTimeout(timer); timer = setTimeout(flush, 700);
+  }
+  async function flush() {
+    if (writing) { timer = setTimeout(flush, 300); return; }
+    if (!dirty) return;
+    writing = true; dirty = false;
+    var body = JSON.parse(JSON.stringify(state)), ok = true;
+    try { await ref.set(body); }
+    catch (e) {
+      if (e && e.code === "unavailable") {
+        try { await sleep(400 + Math.random() * 500); await ref.set(body); } catch (e2) { ok = false; }
+      } else ok = false;
+    }
+    writing = false;
+    if (!ok) { setSync("error"); return; }
+    if (dirty) schedule(); else setSync("synced");
+  }
+  function save() { state.updatedAt = Date.now(); localStore(); schedule(); render(); }
+
+  /* ---------- moves ---------- */
+  var app = document.getElementById("app");
+  var confirming = false;
+  function plus() {
+    var s = state.stage, v = state.v;
+    if (s === "cast") { state.stage = "top"; v.top = 1; }
+    else if (s === "top") { if (v.top < 6) v.top++; else { state.stage = "body"; v.body = Math.max(1, v.body); } }
+    else if (s === "body") v.body++;
+    else if (s === "bottom") { if (v.bottom < 7) v.bottom++; else { state.stage = "done"; openMap.straps = true; } }
+    else return;
+    save();
+  }
+  function minus() {
+    var s = state.stage, v = state.v;
+    if (s === "top") { if (v.top > 1) v.top--; else state.stage = "cast"; }
+    else if (s === "body") { if (v.body > 1) v.body--; else { state.stage = "top"; v.top = 6; } }
+    else if (s === "bottom") { if (v.bottom > 1) v.bottom--; else state.stage = "body"; }
+    else if (s === "done") { state.stage = "bottom"; v.bottom = 7; }
+    else return;
+    save();
+  }
+  function jump(n) {
+    var s = state.stage;
+    if (s === "top" || s === "body" || s === "bottom") { state.v[s] = Math.max(1, n); save(); }
+  }
+  function setStage(s) { if (STAGES.indexOf(s) >= 0 && s !== state.stage) { state.stage = s; save(); } }
+
+  /* ---------- helpers ---------- */
+  function cyc(v) { return ((v - 1) % 10) + 1; }
+  function rep(v) { return Math.floor((v - 1) / 10) + 1; }
+  function plainOrKnit(k) { return k % 2 === 1 ? "Purl every stitch. *P*" : "Knit every stitch. *K*"; }
+
+  /* what is being worked right now */
+  function view() {
+    var s = state.stage, v = state.v;
+    if (s === "cast") return { title: "Cast on", chip: "Start", text: "CO 98 sts, PM, join in the round.", sts: "98 sts · tap + when you are joined" };
+    if (s === "done") return { state: "done" };
+    if (s === "top") return { title: "Top border, round " + v.top, chip: "Garter", text: plainOrKnit(v.top), sts: "98 sts" };
+    if (s === "body") {
+      var r = cyc(v.body);
+      return { title: "Body, round " + r, chip: isLace(r) ? "Lace round" : "Plain round", lace: isLace(r),
+        text: "*" + TXT[r - 1] + ", " + (v.body === 1 ? "PM" : "SM") + "*", sts: "98 sts · work between the asterisks twice", chartRound: r,
+        note: v.body === 1 ? "First time only: place a marker after the first panel. At the end of the round you reach the beginning-of-round marker, so just slip it." : "" };
+    }
+    var b = v.bottom;
+    if (b === 1) return { title: "Bottom border: body Round 1 again", chip: "Plain round", text: "*" + TXT[0] + ", SM*", sts: "98 sts · work between the asterisks twice", chartRound: 1 };
+    var k = b - 1;
+    if (k === 6) return { title: "Bottom border, round 6", chip: "Bind off", text: "BO all sts knitwise.", sts: "98 sts to bind off" };
+    return { title: "Bottom border, round " + k, chip: "Garter", text: plainOrKnit(k), sts: "98 sts" };
+  }
+
+  /* ---------- chart ---------- */
+  function sym(kind, x, y, c) {
+    var cx = x + c / 2, cy = y + c / 2;
+    if (kind === "P") return '<circle class="sf" cx="' + cx + '" cy="' + cy + '" r="2.8"/>';
+    if (kind === "YO") return '<circle class="sn" cx="' + cx + '" cy="' + cy + '" r="' + (c * 0.22) + '"/>';
+    if (kind === "K2TOG") return '<line class="sl" x1="' + (x + c * 0.25) + '" y1="' + (y + c * 0.8) + '" x2="' + (x + c * 0.75) + '" y2="' + (y + c * 0.2) + '"/>';
+    if (kind === "SKPO") return '<line class="sl" x1="' + (x + c * 0.25) + '" y1="' + (y + c * 0.2) + '" x2="' + (x + c * 0.75) + '" y2="' + (y + c * 0.8) + '"/>';
+    return "";
+  }
+  function chartSVG(active, tappable) {
+    var c = 28, block = 62, top = 22, bottom = 20, right = 34;
+    var W = block + 13 * c + right, H = top + 10 * c + bottom, px = block, h = 10 * c;
+    var o = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Lace chart, rounds 1 to 10, read right to left">';
+    o += '<rect class="blk" x="0" y="' + top + '" width="' + block + '" height="' + h + '"/>';
+    if (active > 1) o += '<rect class="wash" x="0" y="' + (top + (10 - active + 1) * c) + '" width="' + (px + 13 * c) + '" height="' + ((active - 1) * c) + '"/>';
+    for (var i = 0; i <= 10; i++) o += '<line class="g" x1="0" x2="' + (px + 13 * c) + '" y1="' + (top + i * c) + '" y2="' + (top + i * c) + '"/>';
+    for (var j = 0; j <= 13; j++) o += '<line class="g" x1="' + (px + j * c) + '" x2="' + (px + j * c) + '" y1="' + top + '" y2="' + (top + h) + '"/>';
+    o += '<rect class="gb" x="0.5" y="' + top + '" width="' + (px + 13 * c - 0.5) + '" height="' + h + '"/>';
+    for (var r = 1; r <= 10; r++) {
+      var y = top + (10 - r) * c, row = CHART[r - 1];
+      o += '<text class="t" x="' + (block / 2) + '" y="' + (y + c / 2 + 4) + '" text-anchor="middle">K' + FILL + '</text>';
+      for (var col = 0; col < 13; col++) o += sym(row[12 - col], px + col * c, y, c);
+    }
+    if (active) {
+      var ay = top + (10 - active) * c;
+      o += '<rect class="band" x="1" y="' + ay + '" width="' + (px + 13 * c - 2) + '" height="' + c + '"/>';
+    }
+    o += '<line class="mk" x1="' + px + '" x2="' + px + '" y1="' + top + '" y2="' + (top + h) + '"/>';
+    o += '<line class="mk" x1="' + (px + 13 * c) + '" x2="' + (px + 13 * c) + '" y1="' + top + '" y2="' + (top + h) + '"/>';
+    for (var q = 1; q <= 10; q++) {
+      var yy = top + (10 - q) * c, on = q === active;
+      if (on) o += '<rect class="pill" x="' + (px + 13 * c + 5) + '" y="' + (yy + 3) + '" width="26" height="' + (c - 6) + '" rx="7"/>';
+      o += '<text class="' + (on ? "tna" : "tn") + '" x="' + (px + 13 * c + 18) + '" y="' + (yy + c / 2 + 4) + '" text-anchor="middle">' + q + '</text>';
+      if (tappable) o += '<rect class="hit" data-act="chartrow" data-r="' + q + '" x="0" y="' + yy + '" width="' + W + '" height="' + c + '"/>';
+    }
+    for (var s = 0; s < 13; s++) o += '<text class="t" x="' + (px + s * c + c / 2) + '" y="' + (top + h + 14) + '" text-anchor="middle">' + (13 - s) + '</text>';
+    o += '<text class="hd" x="' + (px + 13 * c / 2) + '" y="14" text-anchor="middle">13-ST PANEL, READ RIGHT TO LEFT</text>';
+    o += '<text class="hd" x="' + (block / 2) + '" y="14" text-anchor="middle">THEN</text>';
+    return o + "</svg>";
+  }
+  function keyHTML() {
+    var items = [["K", "knit"], ["P", "purl"], ["YO", "yarn over"], ["K2TOG", "K2TOG"], ["SKPO", "SKPO"]];
+    return '<div class="key">' + items.map(function (it) {
+      return '<span><svg class="chart" viewBox="0 0 24 24"><rect class="gb" x="0.5" y="0.5" width="23" height="23"/>' + sym(it[0], 0, 0, 24) + '</svg>' + it[1] + '</span>';
+    }).join("") + '<span><svg class="chart" viewBox="0 0 24 24"><rect class="blk gb" x="0.5" y="0.5" width="23" height="23"/></svg>K' + FILL + ', then slip marker</span></div>';
+  }
+  function checkSVG() { return '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>'; }
+
+  /* ---------- screen ---------- */
+  function stageSmall(s, i) {
+    if (s === "cast") return i < stageIdx() ? checkSVG() : "98 sts";
+    if (s === "top") return i < stageIdx() ? checkSVG() : (state.stage === "top" ? state.v.top + "/6" : "6 rds");
+    if (s === "body") return i < stageIdx() ? checkSVG() : (state.stage === "body" ? "rd " + state.v.body : "lace");
+    return i < stageIdx() ? checkSVG() : (state.stage === "bottom" ? state.v.bottom + "/7" : "BO");
+  }
+  function html() {
+    var st = state.stage, v = state.v, vw = view(), idx = stageIdx();
+    var h = '<div class="head"><div class="eyebrow">Knit in the round · size 30″ bust</div><h1>Lace Panel Tube Top</h1></div>';
+    h += '<details class="materials" data-key="materials"' + (openMap.materials ? " open" : "") + '><summary><span class="sum"><b>DK weight</b> · US 7 (4.5 mm) · 16″ cable</span><span class="chev"></span></summary><dl>'
+      + '<dt>Yarn weight</dt><dd>DK weight yarn</dd>'
+      + '<dt>Yardage</dt><dd>91–429 yards (84–393 meters)<small>across all sizes. For the 30″ bust: 91–101 yards (84–93 m), 44–54 g.</small></dd>'
+      + '<dt>Needles</dt><dd>US 7 (4.5 mm) circular needles<small>16″ (40 cm) cable</small></dd>'
+      + '</dl></details>';
+
+    h += '<div class="stages">' + STAGES.map(function (s, i) {
+      var cls = i === idx ? "now" : (i < idx ? "done" : "");
+      return '<button class="stage ' + cls + '" data-act="stage" data-s="' + s + '"' + (i === idx ? ' aria-current="step"' : "") + '>' + NAMES[s] + '<small>' + stageSmall(s, i) + '</small></button>';
+    }).join("") + '</div>';
+
+    var big, lbl;
+    if (st === "cast") { big = "CO"; lbl = "98 sts"; }
+    else if (st === "done") { big = "✓"; lbl = "all done"; }
+    else if (st === "body") { big = String(cyc(v.body)); lbl = "of 10 · repeat " + rep(v.body) + " · " + v.body + " rounds in"; }
+    else if (st === "top") { big = String(v.top); lbl = "of 6"; }
+    else { big = String(v.bottom); lbl = "of 7"; }
+    h += '<div class="counter"><button class="btn-minus" data-act="minus" aria-label="Back one round"' + (st === "cast" ? " disabled" : "") + '>−</button>'
+      + '<div class="num"><div class="big">' + big + '</div><div class="lbl">' + lbl + '</div></div>'
+      + '<button class="btn-plus" data-act="plus" aria-label="Next round"' + (st === "done" ? " disabled" : "") + '>+</button></div>';
+
+    if (vw.state === "done") {
+      h += '<div class="panel finished"><b>Bound off</b><div class="sts">All 98 sts bound off. Optional straps are below.</div></div>';
+    } else {
+      h += '<div class="panel' + (vw.lace ? " lace" : "") + '"><span class="chip">' + vw.chip + '</span><div class="title-line">' + vw.title + '</div><div class="instr">' + vw.text + '</div><div class="sts">' + vw.sts + '</div>' + (vw.note ? '<p class="note">' + vw.note + '</p>' : "") + '</div>';
+    }
+
+    if (st === "body" || (st === "bottom" && v.bottom === 1)) {
+      h += '<div class="chart-box"><div class="eyebrow">Lace chart</div>' + chartSVG(vw.chartRound || 0, st === "body")
+        + (st === "body" ? '<div class="hint">Tap a row to jump to that round.</div>' : "") + keyHTML() + '</div>';
+    }
+
+    var items = [], title = "";
+    if (st === "body") {
+      title = "Rounds in this repeat";
+      var ar = cyc(v.body), baseN = Math.floor((v.body - 1) / 10) * 10;
+      for (var r = 1; r <= 10; r++) items.push({ label: "Round " + r, tag: isLace(r) ? "Lace" : "Plain", lace: isLace(r), cls: r === ar ? "now" : (r < ar ? "past" : ""), target: baseN + r });
+    } else if (st === "top") {
+      title = "Top border rounds";
+      for (var n = 1; n <= 6; n++) items.push({ label: "Round " + n, tag: n % 2 ? "Purl" : "Knit", cls: n === v.top ? "now" : (n < v.top ? "past" : ""), target: n });
+    } else if (st === "bottom") {
+      title = "Bottom border rounds";
+      for (var m = 1; m <= 7; m++) {
+        var lab, tag;
+        if (m === 1) { lab = "Body Round 1 again"; tag = "Plain"; }
+        else { var k = m - 1; lab = "Border round " + k; tag = k === 6 ? "Bind off" : (k % 2 ? "Purl" : "Knit"); }
+        items.push({ label: lab, tag: tag, cls: m === v.bottom ? "now" : (m < v.bottom ? "past" : ""), target: m });
+      }
+    }
+    if (items.length) {
+      h += '<div class="list"><h3>' + title + '</h3>' + items.map(function (it) {
+        return '<button class="item ' + it.cls + (it.lace ? " lace" : "") + '" data-act="jump" data-v="' + it.target + '"><span>' + it.label + '</span><span class="tag">' + it.tag + '</span></button>';
+      }).join("") + '</div>';
+    }
+
+    if (st === "body") {
+      h += '<div class="panel"><div class="note" style="margin:0 0 10px">Keep repeating rounds 1–10 until the piece is the length you want (6″ / 16 cm for this size). Then move on to the bottom border, which starts with one more Round 1.</div>'
+        + '<button class="ghost solid" data-act="tobottom">Start the bottom border</button></div>';
+    }
+    var sp = state.straps, so = STRAPS[sp.opt];
+    h += '<details class="materials straps" data-key="straps"' + (openMap.straps ? " open" : "") + '><summary><span class="sum"><b>Optional straps</b> · add after the borders</span><span class="chev"></span></summary><div class="strap-body">'
+      + '<p class="note" style="margin-top:0">Add straps once the piece is finished, picking up stitches along the cast-on (top) edge. Finish the top and bottom borders as written first.</p>'
+      + '<div class="seg">' + ["icord", "garter"].map(function (k, i) {
+        return '<button class="' + (k === sp.opt ? "on" : "") + '" data-act="strapopt" data-k="' + k + '">Option ' + (i + 1) + '<small>' + STRAPS[k].name + '</small></button>';
+      }).join("") + '</div>'
+      + '<p class="note">' + so.blurb + ' Tap a step when it is done.</p>'
+      + so.steps.map(function (t, i) {
+        var on = sp.done[sp.opt][i];
+        return '<button class="step' + (on ? " on" : "") + '" data-act="strapstep" data-i="' + i + '"><span class="box' + (on ? " on" : "") + '">' + (on ? checkSVG() : "") + '</span><span>' + t + '</span></button>';
+      }).join("")
+      + '<div class="eyebrow" style="margin:16px 0 8px">For either option</div><ul class="tips">'
+      + STRAP_TIPS.map(function (t) { return '<li><b>' + t[0] + ':</b> ' + t[1] + '</li>'; }).join("")
+      + '</ul></div></details>';
+    h += '<div class="actions">' + (confirming
+      ? '<div class="confirm"><span>Start over from cast on?</span><button class="ghost solid" data-act="resetyes">Yes, start over</button><button class="ghost" data-act="resetno">Cancel</button></div>'
+      : '<button class="ghost" data-act="reset">Start over</button>') + '</div>';
+    h += '<div class="sync" id="sync">' + syncText() + '</div>';
+    return h;
+  }
+
+  var openMap = { materials: false, straps: state.stage === "done" };
+  function render() {
+    var y = window.scrollY;
+    app.innerHTML = html();
+    window.scrollTo(0, y);
+  }
+  app.addEventListener("toggle", function (e) {
+    var k = e.target.getAttribute && e.target.getAttribute("data-key");
+    if (k) openMap[k] = e.target.open;
+  }, true);
+
+  /* ---------- events ---------- */
+  var wake = null;
+  function keepAwake() {
+    try {
+      if (wake || !navigator.wakeLock) return;
+      navigator.wakeLock.request("screen").then(function (l) { wake = l; l.addEventListener("release", function () { wake = null; }); }, function () {});
+    } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && stageIdx() > 0) keepAwake(); });
+  app.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-act]");
+    if (!el) return;
+    keepAwake();
+    var act = el.getAttribute("data-act");
+    if (act === "plus") plus();
+    else if (act === "minus") minus();
+    else if (act === "jump") jump(Number(el.getAttribute("data-v")));
+    else if (act === "chartrow") jump(Math.floor((state.v.body - 1) / 10) * 10 + Number(el.getAttribute("data-r")));
+    else if (act === "stage") setStage(el.getAttribute("data-s"));
+    else if (act === "tobottom") { state.stage = "bottom"; state.v.bottom = 1; window.scrollTo(0, 0); save(); }
+    else if (act === "strapopt") { state.straps.opt = el.getAttribute("data-k"); save(); }
+    else if (act === "strapstep") { var si = Number(el.getAttribute("data-i")), arr = state.straps.done[state.straps.opt]; arr[si] = !arr[si]; save(); }
+    else if (act === "reset") { confirming = true; render(); }
+    else if (act === "resetno") { confirming = false; render(); }
+    else if (act === "resetyes") { confirming = false; state = blank(); state.updatedAt = Date.now(); localStore(); schedule(); render(); }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.target.closest("button, summary, input")) return;
+    if (e.key === "+" || e.key === "ArrowRight") plus();
+    else if (e.key === "-" || e.key === "ArrowLeft") minus();
+  });
+
+  render();
+
+  /* ---------- connect saved progress ---------- */
+  (async function () {
+    try {
+      var db = window.claude && window.claude.use ? await window.claude.use("db") : null;
+      if (!db) return;
+      ref = db.doc(DOCPATH);
+      setSync("synced");
+      ref.onSnapshot(function (snap) {
+        if (dirty || writing) return;
+        if (snap.exists) {
+          var d = snap.data() || {};
+          if ((Number(d.updatedAt) || 0) > state.updatedAt) { state = normalize(d); localStore(); render(); }
+        }
+        setSync("synced");
+      }, function () { ref = null; setSync("local"); });
+    } catch (e) { ref = null; setSync("local"); }
+  })();
+})();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+</script>
+</body>
+</html>
