@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Miu Top — Row Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Miu Top">
+<meta name="theme-color" content="#ECE9EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1A171A" media="(prefers-color-scheme: dark)">
+<style>:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); } html, body { margin: 0; } [hidden] { display: none !important; }</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: single phone column — home cards → piece view with a big counter, a live schematic and the row list. */
+:root{
+  --bg:#ECE9EC; --surface:#F8F6F8; --line:#D6D0D5; --ink:#2A2429; --muted:#6F666D;
+  --accent:#7A5468; --accent-ink:#FFFFFF; --accent-soft:#E5D8DF;
+  --shape:#2F7471; --shape-soft:#D5E7E5;
+  --knit:#B9AFB6; --past:rgba(122,84,104,.18);
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1A171A; --surface:#252025; --line:#3A3339; --ink:#EEE7EC; --muted:#A99EA6;
+  --accent:#D3A7BD; --accent-ink:#2A1622; --accent-soft:#3D2B35;
+  --shape:#7EC4BE; --shape-soft:#1F3634; --knit:#5E555C; --past:rgba(211,167,189,.20); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1A171A; --surface:#252025; --line:#3A3339; --ink:#EEE7EC; --muted:#A99EA6;
+  --accent:#D3A7BD; --accent-ink:#2A1622; --accent-soft:#3D2B35;
+  --shape:#7EC4BE; --shape-soft:#1F3634; --knit:#5E555C; --past:rgba(211,167,189,.20); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:16px/1.45 var(--body);-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* home */
+.hero{display:flex;flex-direction:column;gap:2px;padding-block:18px 10px}
+.hero h1{font:italic 400 64px/0.95 var(--display);margin:0;letter-spacing:-.01em}
+.hero p{margin:0;color:var(--muted)}
+.specs{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-block:10px 14px}
+.specs dt{color:var(--muted)}
+.specs dd{margin:0;min-width:0}
+.sync{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync.ok i{background:var(--shape)}
+.resume{display:flex;justify-content:space-between;align-items:center;width:100%;margin-block:14px;padding:16px 18px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);text-align:left}
+.resume b{display:block;font-size:17px}
+.resume span{font-size:14px;opacity:.85}
+.group{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.group h2{margin:14px 0 2px}
+.card{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-align:left}
+.card svg{width:64px;height:64px}
+.card .nm{font:400 26px/1 var(--display)}
+.card .sub{font-size:13px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.card .rc{font-size:13px;margin-top:6px}
+
+/* piece */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:8px;padding-block:8px;border-bottom:1px solid var(--line)}
+.top .back{border:0;background:none;padding:8px 6px;font-weight:600;color:var(--accent)}
+.top h1{flex:1;min-width:0;margin:0;text-align:center;font:400 28px/1 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:20px;line-height:1}
+.nav:disabled{opacity:.3;cursor:default}
+.counter{display:grid;grid-template-columns:76px 1fr 112px;gap:12px;align-items:center;margin-top:16px}
+.btn-minus{height:76px;border-radius:18px;border:1px solid var(--line);background:var(--surface);font-size:34px}
+.btn-plus{height:112px;border-radius:24px;border:0;background:var(--accent);color:var(--accent-ink);font-size:52px;font-weight:300;box-shadow:0 6px 18px -8px var(--accent)}
+.btn-plus:active,.btn-minus:active{transform:scale(.97)}
+.readout{text-align:center;min-width:0}
+.readout .n{font:600 52px/1 var(--mono);font-variant-numeric:tabular-nums}
+.readout .of{color:var(--muted);font-size:14px}
+.readout .side{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:99px;background:var(--accent-soft);color:var(--ink)}
+.instr{margin-top:16px;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.instr.shape{background:var(--shape-soft);border-color:var(--shape)}
+.instr .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.instr.shape .lbl{color:var(--shape)}
+.instr .t{font-size:19px;line-height:1.4;margin-top:4px;font-weight:500}
+.instr .s{margin-top:10px;display:flex;align-items:baseline;gap:6px;font-size:14px;color:var(--muted)}
+.instr .s b{font:600 26px/1 var(--mono);color:var(--ink)}
+.instr.shape .s b{color:var(--shape)}
+.panel{margin-top:16px;padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.panel h3{margin:0 0 6px;display:flex;justify-content:space-between;align-items:baseline}
+.schem{display:block;width:100%;height:auto;max-height:380px;touch-action:manipulation;cursor:pointer}
+.schem text{font-family:var(--mono);font-size:3.4px;fill:var(--muted)}
+.schem .tag{font-size:3.8px;font-weight:600;fill:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:8px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.rows{margin-top:16px}
+.rows h3{margin:0 0 6px}
+.rowlist{position:relative;list-style:none;margin:0;padding:0;max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.rowlist li{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:baseline;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.rowlist li:last-child{border-bottom:0}
+.rowlist li .r{font-family:var(--mono);color:var(--muted)}
+.rowlist li .st{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.rowlist li.sh .r{color:var(--shape);font-weight:600}
+.rowlist li.done{opacity:.45}
+.rowlist li.done .tx{text-decoration:line-through}
+.rowlist li.cur{position:sticky;top:0;bottom:0;background:var(--accent);color:var(--accent-ink);opacity:1;z-index:1}
+.rowlist li.cur .r,.rowlist li.cur .st{color:var(--accent-ink)}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+.ghost{border:1px solid var(--line);background:none;border-radius:10px;padding:8px 12px;font-size:14px}
+.danger{border-color:var(--accent);color:var(--accent);font-weight:600}
+.checks{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);cursor:pointer}
+.checks li .bx{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--accent);display:grid;place-items:center;font-weight:700;color:var(--accent-ink)}
+.checks li.on .bx{background:var(--accent)}
+.checks li.on .tx{color:var(--muted);text-decoration:line-through}
+.checks .opt{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--shape);text-transform:uppercase;display:block}
+.note{font-size:13px;color:var(--muted);margin-top:14px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- pattern data: Miu Top by Una Gil, size XS ---------- */
+const SLUG = "miu-top-xs";
+const STKEY = "miutracker:" + SLUG;
+const panelRows = 48; // 30 straight + 2 marker rows + 16 decrease rows
+function panelNotes(firstRow){
+  const n = { 1: firstRow,
+    31:{t:"K17, place removable marker, K62, place marker, K17.", s:96},
+    32:{t:"Purl across.", s:96} };
+  for(let r=33;r<=48;r++){
+    const rs = r%2===1, s = 96-2*(r-32);
+    n[r] = { shape:1, s,
+      t: rs ? "SSK, K to marker, slip marker, K to next marker, slip marker, K to last 2 sts, K2tog."
+            : "P2tog, P to marker, slip marker, P to next marker, slip marker, P to last 2 sts, SSP." };
+    if(r===48) n[r].t += " One stitch is left outside each marker.";
+  }
+  return n;
+}
+const PIECES = [
+  { id:"body", name:"Body", round:true, rows:92, castOn:132, castLabel:"Cast on",
+    sub:"In the round · rib, then bust",
+    castText:"German twisted cast on (or another stretchy cast on): 132 sts on 3 mm needles. Place a marker and join in the round without twisting.",
+    endText:"Body done. Next, split into front and back on the Front card.",
+    notes:{
+      61:{t:"Switch to 4 mm needles. Knit all 132 sts.", s:132},
+      62:{t:"Increase round: [(K1, kfb) 5 times, K1] — repeat 12 times.", s:192, shape:1}
+    },
+    ranges:[[1,60,"2×2 rib: (K2, P2) around.",132],[63,92,"Knit all stitches.",192]],
+    sections:[[1,60,"Ribbing · 3 mm"],[61,92,"Bust · 4 mm"]],
+    dims(r){ if(r<=60) return {w:10.5,h:6.5/60}; if(r===61) return {w:132/5.5/2,h:1/8}; return {w:192/5.5/2,h:1/8}; }
+  },
+  { id:"front", name:"Front", rows:panelRows, castOn:96, castLabel:"Start",
+    sub:"Worked flat · sleeve shaping",
+    castText:"Body on the 4 mm needles, 192 sts, ready to split. Row 1 starts the front.",
+    endText:"Bind off all 64 sts loosely (an elastic bind off gives a slouchier neckline). Leave the markers in for seaming.",
+    notes: panelNotes({t:"Split: K96 for the front. Slip the other 96 sts onto scrap yarn for the back. Turn.", s:96}),
+    ranges:[[2,30,"Stockinette: knit RS rows, purl WS rows.",96]],
+    sections:[[1,30,"Straight · about 3.75 in"],[31,48,"Sleeve shaping"]],
+    dims:panelDims
+  },
+  { id:"back", name:"Back", rows:panelRows, castOn:96, castLabel:"Start",
+    sub:"Worked flat · mirrors the front",
+    castText:"Move the 96 held back stitches onto the 4 mm needles and rejoin yarn at the RS.",
+    endText:"Bind off all 64 sts the same way as the front. Leave the markers in for seaming.",
+    notes: panelNotes({t:"Knit across all 96 sts (RS).", s:96}),
+    ranges:[[2,30,"Stockinette: knit RS rows, purl WS rows.",96]],
+    sections:[[1,30,"Straight · about 3.75 in"],[31,48,"Sleeve shaping"]],
+    dims:panelDims
+  }
+];
+function panelDims(r){ const s = r<=32 ? 96 : 96-2*(r-32); return {w:s/5.5,h:1/8}; }
+const FINISH = [
+  {id:"try",t:"Try the top on before seaming to check the neckline and length."},
+  {id:"inside",t:"Turn the top inside out and line up front and back."},
+  {id:"left",t:"Left shoulder: seam the outer 17 sts from the edge in to the marker."},
+  {id:"right",t:"Right shoulder: seam the outer 17 sts from the edge in to the marker."},
+  {id:"extra",opt:1,t:"If the neckline falls too far off the shoulder, seam a few more stitches past each marker."},
+  {id:"markers",t:"Remove the stitch markers."},
+  {id:"ends",t:"Weave in all ends."},
+  {id:"block",t:"Wash and block: bust about 35 in around, rib 21 in around, neckline about 11 in flat."}
+];
+
+/* ---------- state + sync ---------- */
+let state = {rows:{}, checks:{}, last:null, updatedAt:0};
+try{ const s = JSON.parse(localStorage.getItem(STKEY)||"null"); if(s && s.rows) state = Object.assign(state,s); }catch(e){}
+let ref=null, pending=false, writing=false, timer=null, syncMsg="Saved on this phone", syncOk=false;
+function setSync(msg,ok){ syncMsg=msg; syncOk=!!ok; document.querySelectorAll(".sync").forEach(el=>{el.className="sync"+(ok?" ok":""); el.lastElementChild.textContent=msg;}); }
+function save(){
+  state.updatedAt = Date.now();
+  try{ localStorage.setItem(STKEY, JSON.stringify(state)); }catch(e){}
+  if(!ref) return;
+  pending=true; setSync("Saving…",false);
+  clearTimeout(timer); timer=setTimeout(flush,700);
+}
+async function flush(retried){
+  if(writing){ clearTimeout(timer); timer=setTimeout(flush,300); return; }
+  writing=true;
+  const snap = JSON.parse(JSON.stringify(state));
+  try{ await ref.set(snap); pending = state.updatedAt!==snap.updatedAt; setSync("Synced across devices",true); }
+  catch(e){
+    writing=false;
+    if(!retried && e && e.code==="unavailable"){ setTimeout(()=>flush(true),1500); return; }
+    setSync("Not synced — progress is saved on this phone",false);
+  }
+  writing=false;
+}
+(async()=>{
+  if(!window.claude || !window.claude.use) return;
+  const db = await window.claude.use("db");
+  if(!db){ setSync("Saved on this phone",false); return; }
+  ref = db.doc("progress/"+SLUG);
+  setSync("Connecting…",false);
+  ref.onSnapshot(snap=>{
+    if(snap.exists){
+      const d = snap.data();
+      if(d && d.updatedAt > state.updatedAt && !pending){
+        state = Object.assign({rows:{},checks:{},last:null,updatedAt:0}, JSON.parse(JSON.stringify(d)));
+        try{ localStorage.setItem(STKEY, JSON.stringify(state)); }catch(e){}
+        render();
+      }
+    } else if(state.updatedAt){ pending=true; flush(); }
+    if(!pending) setSync("Synced across devices",true);
+  }, ()=> setSync("Not synced — progress is saved on this phone",false));
+})();
+
+/* ---------- helpers ---------- */
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const rowOf = p => Math.max(0, Math.min(p.rows+1, state.rows[p.id]||0));
+function info(p,r){
+  if(r===0) return {t:p.castText, s:p.castOn, lbl:p.castLabel};
+  if(r===p.rows+1) return {t:p.endText, s:p.id==="body"?192:64, lbl:p.id==="body"?"Done":"Bind off", end:1};
+  const n = p.notes[r];
+  if(n) return {t:n.t, s:n.s, shape:n.shape};
+  for(const [a,b,t,s] of p.ranges) if(r>=a && r<=b) return {t, s};
+  return {t:"", s:""};
+}
+function side(p,r){ if(p.round) return "ROUND"; return r%2 ? "RS" : "WS"; }
+function sectionOf(p,r){ for(const [a,b,t] of p.sections) if(r>=a&&r<=b) return t; return ""; }
+
+/* ---------- schematic ---------- */
+function geom(p){
+  let y=0, W=0; const g=[null];
+  for(let r=1;r<=p.rows;r++){ const {w,h}=p.dims(r); g.push({y0:y,y1:y+h,w}); y+=h; W=Math.max(W,w); }
+  return {g,H:y,W};
+}
+function schematic(p, r, small){
+  const {g,H,W} = geom(p), S=4; // 4 svg units per inch
+  const padX = small?2:22, padT = small?2:10, padB = small?2:12;
+  const vw = W*S+padX*2, vh = H*S+padT+padB;
+  const cx = vw/2, Y = y => padT + (H-y)*S;
+  let rp=[], lp=[];
+  for(let i=1;i<=p.rows;i++){ const o=g[i], hx=o.w*S/2; rp.push(`${cx+hx},${Y(o.y0)}`,`${cx+hx},${Y(o.y1)}`); lp.unshift(`${cx-hx},${Y(o.y0)}`,`${cx-hx},${Y(o.y1)}`); }
+  const poly = rp.concat(lp).join(" ");
+  const cid = "c-"+p.id+(small?"s":"");
+  let s = `<svg class="${small?"":"schem"}" viewBox="0 0 ${vw.toFixed(1)} ${vh.toFixed(1)}" ${small?"":`data-piece="${p.id}"`} role="img" aria-label="${esc(p.name)} schematic">`;
+  s += `<defs><clipPath id="${cid}"><polygon points="${poly}"/></clipPath></defs>`;
+  s += `<polygon points="${poly}" fill="var(--bg)" stroke="var(--knit)" stroke-width="${small?1.2:.5}"/>`;
+  // texture
+  s += `<g clip-path="url(#${cid})" stroke="var(--knit)" stroke-width="${small?.6:.25}">`;
+  if(p.id==="body"){ const top=g[60].y1; for(let x=-W*S/2; x<=W*S/2; x+= (10.5*S)/(66/4)) s+=`<line x1="${cx+x}" y1="${Y(0)}" x2="${cx+x}" y2="${Y(top)}"/>`; s+=`<line x1="0" x2="${vw}" y1="${Y(top)}" y2="${Y(top)}" stroke-dasharray="1 1"/>`; }
+  else { const y31=g[31].y0, hx=48/5.5*S, mx=(48-17)/5.5*S; s+=`<line x1="0" x2="${vw}" y1="${Y(y31)}" y2="${Y(y31)}" stroke-dasharray="1 1"/>`;
+    [cx-mx,cx+mx].forEach(x=> s+=`<line x1="${x}" x2="${x}" y1="${Y(y31)}" y2="${Y(H)}" stroke="var(--shape)" stroke-dasharray="1.2 .8"/>`); }
+  s += `</g>`;
+  // progress
+  if(r>0){
+    const done = r>p.rows ? H : g[r].y0;
+    if(done>0) s += `<rect clip-path="url(#${cid})" x="0" width="${vw}" y="${Y(done)}" height="${(done)*S}" fill="var(--past)"/>`;
+    if(r<=p.rows){
+      const o=g[r], hy=Math.max((o.y1-o.y0)*S, small?3:1.6), sh=p.notes[r]&&p.notes[r].shape;
+      const yy = (Y(o.y0)+Y(o.y1))/2 - hy/2, col = sh?"var(--shape)":"var(--accent)";
+      s += `<rect x="${cx-o.w*S/2-1}" width="${o.w*S+2}" y="${yy}" height="${hy}" rx=".6" fill="${col}" opacity=".9"/>`;
+      if(!small){ const tx = cx+o.w*S/2+2.5; s += `<text class="tag" x="${tx}" y="${yy+hy/2+1.3}">← ${p.round?"R":side(p,r)} ${r}</text>`; }
+    }
+  }
+  if(!small){
+    const lab=(x,y,t,a="middle")=>s+=`<text x="${x}" y="${y}" text-anchor="${a}">${t}</text>`;
+    if(p.id==="body"){
+      lab(cx, Y(0)+6, "10.5 in flat · 21 in around");
+      lab(cx, Y(H)-3, "17.5 in flat · 35 in around");
+      const yr=g[60].y1; lab(cx-W*S/2-2, (Y(0)+Y(yr))/2, "6.5 in", "end"); lab(cx-W*S/2-2, (Y(yr)+Y(H))/2+1, "4 in","end");
+    } else {
+      lab(cx, Y(0)+6, "17.5 in");
+      lab(cx, Y(H)-3, "11.6 in neckline");
+      lab(cx-W*S/2-2, (Y(0)+Y(H))/2, "6 in","end");
+      lab(cx-W*S/2+5, Y(H)-3, "seam","middle"); lab(cx+W*S/2-5, Y(H)-3, "seam","middle");
+    }
+  }
+  return s + `</svg>`;
+}
+
+/* ---------- views ---------- */
+function home(){
+  const last = PIECES.find(p=>p.id===state.last);
+  const card = p => { const r=rowOf(p), pct=Math.min(100, Math.round(Math.min(r,p.rows)/p.rows*100));
+    const lbl = r===0 ? "Not started" : r>p.rows ? (p.id==="body"?"Done":"Bound off") : `${p.round?"Round":"Row"} ${r} / ${p.rows}`;
+    return `<button class="card" data-go="${p.id}">${schematic(p,r,true)}<div><div class="nm">${p.name}</div><div class="sub">${p.castOn} sts · ${p.rows} ${p.round?"rounds":"rows"} · ${esc(p.sub)}</div><div class="rc mono">${lbl}</div><div class="bar"><i style="width:${pct}%"></i></div></div></button>`; };
+  const nChk = FINISH.filter(f=>state.checks[f.id]).length;
+  return `<header class="hero"><span class="eyebrow">Una Gil · Size XS</span><h1>Miu Top</h1><p>Bottom-up in the round, split for front and back.</p></header>
+  <dl class="specs">
+    <dt>Yarn</dt><dd>4 skeins Hobbii Friends Extra Fine Merino, optionally held with 4 skeins Friends Kid Silk</dd>
+    <dt>Needles</dt><dd>3 mm and 4 mm circulars, 60 cm</dd>
+    <dt>Gauge</dt><dd class="mono">22 sts × 32 rows = 4 in, blocked</dd>
+    <dt>Finished</dt><dd>35 in bust · 21 in rib · 11 in neckline</dd>
+  </dl>
+  <div class="sync${syncOk?" ok":""}"><i></i><span>${esc(syncMsg)}</span></div>
+  ${last ? `<button class="resume" data-go="${last.id}"><div><b>Pick up where you left off</b><span>${last.name} · ${rowOf(last)>last.rows?"finished":(last.round?"round ":"row ")+rowOf(last)}</span></div><span style="font-size:24px">›</span></button>`:""}
+  <div class="group">${PIECES.map(card).join("")}</div>
+  <div class="group"><h2 class="eyebrow">Finishing</h2>
+    <button class="card" data-go="finish"><svg viewBox="0 0 64 64"><rect x="8" y="8" width="48" height="48" rx="10" fill="none" stroke="var(--knit)" stroke-width="2"/><path d="M20 33l8 8 16-18" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><div class="nm">Seam &amp; block</div><div class="sub">Shoulder seams, ends, blocking</div><div class="rc mono">${nChk} / ${FINISH.length} done</div><div class="bar"><i style="width:${Math.round(nChk/FINISH.length*100)}%"></i></div></div></button>
+  </div>
+  <p class="note">Miu Top pattern designed by Una Gil (@unibanuni on Instagram, TikTok and Ravelry). This tracker is for personal use alongside the pattern.</p>`;
+}
+let confirmReset=false;
+function topbar(title, idx){
+  const ids = PIECES.map(p=>p.id).concat("finish");
+  return `<div class="top"><button class="back" data-go="">‹ All</button><button class="nav" data-go="${ids[idx-1]||""}" ${idx===0?"disabled":""} aria-label="Previous piece">‹</button><h1>${title}</h1><button class="nav" data-go="${ids[idx+1]||""}" ${idx>=ids.length-1?"disabled":""} aria-label="Next piece">›</button></div>`;
+}
+function piece(p){
+  const r=rowOf(p), i=info(p,r), idx=PIECES.indexOf(p);
+  const unit = p.round?"Round":"Row";
+  const label = r===0 ? p.castLabel : r>p.rows ? i.lbl : `${unit} ${r}`;
+  let rowsHtml = `<li data-row="0" class="${r===0?"cur":"done"}"><span class="r">0</span><span class="tx">${esc(p.castLabel)}</span><span class="st">${p.castOn}</span></li>`;
+  for(let k=1;k<=p.rows;k++){ const x=info(p,k); const cl=[k===r?"cur":k<r?"done":"", x.shape?"sh":""].join(" ");
+    rowsHtml += `<li data-row="${k}" class="${cl}"><span class="r">${p.round?"":side(p,k)+" "}${k}</span><span class="tx">${esc(x.t)}</span><span class="st">${x.s}</span></li>`; }
+  rowsHtml += `<li data-row="${p.rows+1}" class="${r>p.rows?"cur":""}"><span class="r">✓</span><span class="tx">${esc(p.id==="body"?"Done":"Bind off")}</span><span class="st"></span></li>`;
+  return topbar(p.name, idx) + `
+  <div class="counter">
+    <button class="btn-minus" data-step="-1" aria-label="Previous ${unit.toLowerCase()}">−</button>
+    <div class="readout"><div class="n">${r===0?"0":r>p.rows?"✓":r}</div><div class="of mono">${r===0||r>p.rows?esc(label):"of "+p.rows}</div>${r>0&&r<=p.rows?`<span class="side">${p.round?"ROUND · KNIT SIDE":side(p,r)==="RS"?"RS · RIGHT SIDE":"WS · WRONG SIDE"}</span>`:""}</div>
+    <button class="btn-plus" data-step="1" aria-label="Next ${unit.toLowerCase()}">+</button>
+  </div>
+  <div class="instr${i.shape?" shape":""}"><div class="lbl">${i.shape?"Shaping · ":""}${esc(r>0&&r<=p.rows?sectionOf(p,r):label)}</div><div class="t">${esc(i.t)}</div>${i.s!==""?`<div class="s"><b>${i.s}</b> sts ${r===0?"on the needles":"after this "+(p.round?"round":"row")}</div>`:""}</div>
+  <div class="panel"><h3><span class="eyebrow">Where you are</span><span class="eyebrow">tap to jump</span></h3>${schematic(p,r,false)}
+    <div class="legend"><span><i style="background:var(--accent)"></i>current ${unit.toLowerCase()}</span><span><i style="background:var(--shape)"></i>shaping</span><span><i style="background:var(--past)"></i>knitted</span>${p.round?"":`<span><i style="background:none;border-top:2px dashed var(--shape);height:0"></i>markers / seam edge</span>`}</div></div>
+  <div class="rows"><h3 class="eyebrow">All ${p.round?"rounds":"rows"}</h3><ul class="rowlist" id="rowlist">${rowsHtml}</ul></div>
+  <div class="foot"><div class="sync${syncOk?" ok":""}"><i></i><span>${esc(syncMsg)}</span></div>
+    ${confirmReset?`<span><button class="ghost danger" data-reset="yes">Reset ${p.name} to 0</button> <button class="ghost" data-reset="no">Keep</button></span>`:`<button class="ghost" data-reset="ask">Reset</button>`}</div>`;
+}
+function finish(){
+  return topbar("Seam & block", PIECES.length) + `<ul class="checks">${FINISH.map(f=>`<li data-check="${f.id}" class="${state.checks[f.id]?"on":""}" role="checkbox" aria-checked="${!!state.checks[f.id]}" tabindex="0"><span class="bx">${state.checks[f.id]?"✓":""}</span><span class="tx">${f.opt?'<span class="opt">Optional</span>':""}${esc(f.t)}</span></li>`).join("")}</ul>
+  <p class="note">Each shoulder seam joins the 17 stitches outside the markers on the front to the matching 17 on the back. The 62 stitches between the markers stay open as the boat neck.</p>
+  <div class="foot"><div class="sync${syncOk?" ok":""}"><i></i><span>${esc(syncMsg)}</span></div></div>`;
+}
+function current(){ const h=(location.hash||"").slice(1); return PIECES.find(p=>p.id===h) || (h==="finish"?"finish":null); }
+function render(keepScroll){
+  const c = current(), app=$("#app");
+  app.innerHTML = c==="finish" ? finish() : c ? piece(c) : home();
+  if(c && c!=="finish"){ const li=$("#rowlist .cur"), ul=$("#rowlist"); if(li&&ul) ul.scrollTop = li.offsetTop - ul.clientHeight*0.4; }
+}
+function go(id){ confirmReset=false; if(id) location.hash=id; else history.replaceState(null,"",location.pathname+location.search), render(); window.scrollTo(0,0); }
+function setRow(p,v){ v=Math.max(0,Math.min(p.rows+1,v)); state.rows[p.id]=v; state.last=p.id; save(); render(); }
+
+document.addEventListener("click",e=>{
+  const g=e.target.closest("[data-go]"); if(g && !g.disabled){ go(g.dataset.go); return; }
+  const c=current();
+  const st=e.target.closest("[data-step]"); if(st && c && c!=="finish"){ setRow(c, rowOf(c)+(+st.dataset.step)); return; }
+  const li=e.target.closest("[data-row]"); if(li && c){ setRow(c, +li.dataset.row); return; }
+  const svg=e.target.closest("svg.schem"); if(svg && c && c!=="finish"){
+    const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; const m=svg.getScreenCTM(); if(!m) return;
+    const y=pt.matrixTransform(m.inverse()).y; const {g,H}=geom(c); const vh=svg.viewBox.baseVal.height; const yy=H-(y-10)/4;
+    let best=1; for(let k=1;k<=c.rows;k++){ if(yy>=g[k].y0) best=k; } if(yy>H) best=c.rows; setRow(c,best); return; }
+  const ck=e.target.closest("[data-check]"); if(ck){ const id=ck.dataset.check; state.checks[id]=!state.checks[id]; state.last=state.last; save(); render(); return; }
+  const rs=e.target.closest("[data-reset]"); if(rs && c && c!=="finish"){ const a=rs.dataset.reset; if(a==="ask"){confirmReset=true; render();} else if(a==="yes"){confirmReset=false; setRow(c,0);} else {confirmReset=false; render();} }
+});
+document.addEventListener("keydown",e=>{
+  const c=current();
+  if(e.key===" "||e.key==="Enter"){ const ck=e.target.closest&&e.target.closest("[data-check]"); if(ck){ e.preventDefault(); ck.click(); } return; }
+  if(!c||c==="finish") return;
+  if(e.key==="+"||e.key==="="||e.key==="ArrowRight"){ e.preventDefault(); setRow(c,rowOf(c)+1); }
+  if(e.key==="-"||e.key==="ArrowLeft"){ e.preventDefault(); setRow(c,rowOf(c)-1); }
+});
+window.addEventListener("hashchange",()=>{ confirmReset=false; render(); window.scrollTo(0,0); });
+
+/* keep the screen awake while knitting */
+let wake=null;
+async function askWake(){ try{ if(navigator.wakeLock && !wake && document.visibilityState==="visible"){ wake=await navigator.wakeLock.request("screen"); wake.addEventListener("release",()=>wake=null); } }catch(e){} }
+document.addEventListener("pointerdown",askWake,{once:true});
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") askWake(); });
+
+render();
+if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+</script>
+
+</body>
+</html>

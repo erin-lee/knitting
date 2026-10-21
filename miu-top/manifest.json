@@ -1,0 +1,25 @@
+{
+  "name": "Miu Top Row Tracker",
+  "short_name": "Miu Top",
+  "description": "Row tracker for Una Gil's Miu Top in size XS: body, front and back counters with a live schematic",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ECE9EC",
+  "theme_color": "#ECE9EC",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
