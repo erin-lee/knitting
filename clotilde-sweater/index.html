@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clotilde Sweater — Row Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Clotilde">
+<meta name="theme-color" content="#ecebe3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191a15" media="(prefers-color-scheme: dark)">
+<style>:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); } html, body { margin: 0; } [hidden] { display: none !important; }</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one narrow column; home = stacked piece cards grouped by knitting order; piece = sticky nav, big counter, row card, chart panel, row list */
+:root{
+  --bg:#ecebe3; --surface:#f7f6f0; --line:#d6d4c6; --fg:#2a2b22; --muted:#6d6d5c;
+  --accent:#55623a; --accent-soft:#dfe3cf; --on-accent:#f7f8ef;
+  --shape:#9a6630; --shape-soft:#f1e3cf;
+  --chartbg:#ffffff; --band:rgba(85,98,58,.30); --bandline:#55623a; --wash:rgba(236,235,227,.62);
+  --display:"Young Serif",Georgia,"Times New Roman",serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#191a15; --surface:#23241d; --line:#3a3c31; --fg:#ecebdf; --muted:#a5a491;
+  --accent:#b7c48b; --accent-soft:#33392a; --on-accent:#1a1d12;
+  --shape:#e0ab6c; --shape-soft:#3c2f20;
+  --chartbg:#f2f1ea; --band:rgba(85,98,58,.34); --bandline:#3d4a24; --wash:rgba(40,42,34,.40); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#191a15; --surface:#23241d; --line:#3a3c31; --fg:#ecebdf; --muted:#a5a491;
+  --accent:#b7c48b; --accent-soft:#33392a; --on-accent:#1a1d12;
+  --shape:#e0ab6c; --shape-soft:#3c2f20;
+  --chartbg:#f2f1ea; --band:rgba(85,98,58,.34); --bandline:#3d4a24; --wash:rgba(40,42,34,.40); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:640px;margin:0 auto}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.lab{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* home */
+header.home{padding-block:28px 12px;display:grid;gap:6px}
+header.home h1{font-family:var(--display);font-weight:400;font-size:2.3rem;line-height:1.05;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:.95rem}
+.spec{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.88rem;margin-top:10px;padding:12px 0;border-block:1px solid var(--line)}
+.spec dt{color:var(--muted)} .spec dd{margin:0;min-width:0}
+.sync{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:4px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.ok{background:var(--accent)} .dot.wait{background:var(--shape)}
+.resume{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;margin-top:14px;padding:16px 18px;border:0;border-radius:14px;background:var(--accent);color:var(--on-accent);text-align:left}
+.resume b{font-family:var(--display);font-weight:400;font-size:1.3rem;display:block}
+.resume .arrow{font-size:1.6rem}
+.group{margin-top:26px;display:grid;gap:10px}
+.group h2{margin:0;font-family:var(--body);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.card{display:grid;grid-template-columns:1fr 64px;gap:12px;align-items:center;padding:14px 14px 14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;text-align:left;width:100%}
+.card .nm{font-family:var(--display);font-size:1.2rem;line-height:1.2}
+.card .meta{font-size:.82rem;color:var(--muted)}
+.card .bar{height:5px;background:var(--line);border-radius:3px;margin-top:8px;overflow:hidden}
+.card .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.card .rn{font-size:.82rem;margin-top:6px}
+.card .th{width:64px;height:52px;border-radius:6px;background:var(--chartbg);background-size:cover;background-position:center bottom;border:1px solid var(--line)}
+.card .th.none{display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-family:var(--display);font-size:1.3rem}
+.card.done .nm::after{content:" ✓";color:var(--accent)}
+
+/* piece */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:8px;padding-block:10px;border-bottom:1px solid var(--line)}
+.topbar .back{border:0;background:none;padding:8px 6px;font-weight:600;color:var(--accent)}
+.topbar .t{flex:1;min-width:0;text-align:center;font-family:var(--display);font-size:1.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .nav{border:1px solid var(--line);background:var(--surface);width:40px;height:40px;border-radius:10px;font-size:1.2rem}
+.topbar .nav:disabled{opacity:.35}
+.ctr{display:grid;grid-template-columns:72px 1fr 112px;gap:12px;align-items:center;margin-top:16px}
+.ctr .minus{height:72px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font-size:2rem}
+.ctr .plus{height:112px;border-radius:22px;border:0;background:var(--accent);color:var(--on-accent);font-size:3rem;font-weight:500;box-shadow:0 6px 18px -8px var(--accent)}
+.ctr .plus:active,.ctr .minus:active{transform:scale(.97)}
+.ctr .val{text-align:center;min-width:0}
+.ctr .big{font-size:3.4rem;font-weight:600;line-height:1}
+.ctr .of{color:var(--muted);font-size:.85rem}
+.ctr .side{font-size:.85rem;margin-top:4px;font-weight:600}
+.rowcard{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;gap:6px}
+.rowcard.shape{background:var(--shape-soft);border-color:var(--shape)}
+.rowcard.shape .lab{color:var(--shape)}
+.rowcard .ins{font-size:1.02rem}
+.rowcard a,.cnote a{color:var(--accent);font-weight:600;text-underline-offset:2px}
+.rowcard.shape a{color:var(--shape)}
+.steps{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:4px}
+.steps li{display:flex;gap:6px;align-items:stretch}
+.stp{flex:1;min-width:0;display:flex;gap:10px;align-items:flex-start;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 10px;font-size:1rem}
+.rowcard.shape .stp{border-color:color-mix(in srgb,var(--shape) 40%,transparent)}
+.stp .ck{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);display:grid;place-items:center;font-family:var(--mono);font-size:.75rem;color:var(--accent)}
+.stp .sx{min-width:0}
+.stp .sec{display:block;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.stp .cnt{color:var(--muted);font-size:.82rem}
+.steps li.sd .stp{opacity:.5}.steps li.sd .sx{text-decoration:line-through}
+.steps li.sd .ck{background:var(--accent);color:var(--on-accent)}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:0 10px;font-size:.78rem;color:var(--muted)}
+.rowcard .sts{font-size:.85rem;color:var(--muted)}
+.rowcard .sts b{color:var(--fg)}
+.chartpanel{margin-top:16px;display:grid;gap:8px}
+.chhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex:1;min-width:0;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:.82rem}
+.tab[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.zoom{display:flex;gap:4px}
+.zoom button{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:1.1rem}
+.cbox{position:relative;max-height:340px;overflow:auto;border-radius:12px;border:1px solid var(--line);background:var(--chartbg);overscroll-behavior:contain}
+.cinner{position:relative;margin:10px auto}
+.cinner img{display:block;width:100%;height:100%;max-width:none;user-select:none;-webkit-user-drag:none}
+.band{position:absolute;left:0;right:0;background:var(--band);border-block:2px solid var(--bandline);pointer-events:none}
+.wash{position:absolute;left:0;right:0;bottom:0;background:var(--wash);pointer-events:none}
+.tag{position:absolute;z-index:2;background:var(--bandline);color:#f7f8ef;font-family:var(--mono);font-size:.75rem;font-weight:600;padding:2px 7px;border-radius:6px;pointer-events:none;white-space:nowrap;transform:translateY(-50%)}
+.cnote{font-size:.8rem;color:var(--muted)}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px 12px;font-size:.8rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend img{height:20px;width:auto;background:#fff;border-radius:2px}
+.extra{margin-top:16px;display:grid;gap:8px}
+.extra p{margin:0}
+.box{padding:12px 14px;border-radius:12px;background:var(--accent-soft);font-size:.92rem}
+.list{margin-top:20px}
+.list h3{margin:0 0 6px;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.rl{display:grid;gap:2px}
+.ri{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 10px;border-radius:8px;border:0;background:none;text-align:left;width:100%}
+.ri .n{font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+.ri .x{font-size:.9rem;min-width:0}
+.ri.shape .x{color:var(--shape);font-weight:600}
+.ri.past{opacity:.45} .ri.past .x{text-decoration:line-through}
+.ri.now{background:var(--accent);color:var(--on-accent);position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);bottom:8px;z-index:3}
+.ri.now .n,.ri.now.shape .x{color:var(--on-accent)}
+.ri.sep{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px;font-weight:600}
+.foot{margin-top:24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-size:.9rem}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.warn{border-color:var(--shape);color:var(--shape)}
+.checks{display:grid;gap:8px;margin-top:16px}
+.chk{display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--line);text-align:left;width:100%;font-size:1rem}
+.chk .bx{width:26px;height:26px;border-radius:7px;border:2px solid var(--accent);display:grid;place-items:center;flex:none;color:var(--on-accent)}
+.chk.on .bx{background:var(--accent)}
+.chk.on .tx{color:var(--muted);text-decoration:line-through}
+@media (orientation:landscape) and (max-height:500px){
+  .ctr{grid-template-columns:64px 1fr 88px}.ctr .plus{height:88px}.ctr .minus{height:64px}
+  .cbox{max-height:56vh}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+const CH={"A":{"src":"charts/A.png","w":512,"h":288,"lines":[282,248,213,178,143,108,74,39,4],"rows":8},"B":{"src":"charts/B.png","w":1062,"h":287,"lines":[282,248,213,178,143,108,74,39,4],"rows":8},"C":{"src":"charts/C.png","w":1351,"h":768,"lines":[763,729,694,660,625,591,556,522,487,452,418,384,349,314,280,246,211,176,142,108,73,38,4],"rows":22},"D":{"src":"charts/D.png","w":1224,"h":801,"lines":[796,760,724,688,652,616,580,544,508,472,436,400,364,328,292,256,220,184,148,112,76,40,4],"rows":22},"body":{"src":"charts/body.png","w":649,"h":1021,"lines":[1016,980,944,908,871,835,799,763,727,691,655,618,582,546,510,474,438,402,365,329,293,257,221,185,149,112,76,40,4],"rows":28},"sleeve":{"src":"charts/sleeve.png","w":905,"h":1021,"lines":[1016,980,944,908,871,835,799,763,727,691,655,618,582,546,510,474,438,402,365,329,293,257,221,185,149,112,76,40,4],"rows":28}};
+const KEY=[["k","K from RS, p from WS"],["k2tog","K2tog"],["ssk","Sl1k, k1, psso"],["cdd","Sl1k, k2tog, psso"],["yo","Yo"],["m1l","M1L"],["m1r","M1R"],["rep","Repeat section"]];
+
+// ---------- pattern data: size XS ----------
+function yokeSteps(r){const k=(r+1)/2;return [["Back",`Chart C rnd ${r}, sm`,"C",33+2*k],["Sleeve",`Chart D rnd ${r}, sm`,"D",15+2*k],["Front",`Chart C rnd ${r}, sm`,"C",33+2*k],["Sleeve",`Chart D rnd ${r} to BOR`,"D",15+2*k]];}
+const yokeNotes={1:{lead:"Set-up inc round.",steps:yokeSteps(1),s:104,shape:1}};
+for(let r=3;r<=21;r+=2) yokeNotes[r]={lead:"Inc round.",steps:yokeSteps(r),s:96+8*(r+1)/2,shape:1};
+yokeNotes[21].lead="Inc round. Last chart round for XS.";
+yokeNotes[21].sub="55 front · 55 back · 37 each sleeve";
+yokeNotes[22]={lead:"Divide body and sleeves.",steps:[["Back","Knit to marker, remove it"],["Sleeve","Place the next 37 sts on waste yarn, sm"],["Front","Knit to marker, remove it"],["Sleeve","Place the next 37 sts on waste yarn, sm (BOR)"]],s:110,shape:1,sub:"55 front · 55 back, sleeves on hold"};
+
+const PIECES=[
+ {id:"neck",group:"yoke",name:"Ribbed neck",castOn:56,rows:9,round:1,
+  castText:"6 mm / US10 needle, 2 strands Heavy Merino + 1 strand Soft Silk Mohair held together. Cast on 56 sts loosely, join in the round without twisting, place BOR marker.",
+  notes:{8:{t:"(k1, p1) to end. Last rib round."},
+         9:{t:"Change to 10 mm / US15 needle. Set-up & inc round: K3, pm, k7 (sleeve), pm, k3, [M1L](https://www.youtube.com/watch?v=n4bAF8eMcvM&t=18s), (k5, M1L) 3 times, k3 (back), pm, k7 (sleeve), pm, k3, M1L, (k5, M1L) 3 times (rest of front).",s:64,shape:1,sub:"25 front · 7 sleeve · 25 back · 7 sleeve"}},
+  ranges:[[1,7,"(k1, p1) to end."]],
+  endText:"BOR now sits just before the last 3 front sts. Go on to the short rows."},
+ {id:"short",group:"yoke",name:"Back short rows",castOn:64,castLabel:"On needle",rows:8,
+  charts:[["A","Sleeves · Chart A"],["B","Back · Chart B"]],
+  intro:"[German short rows](https://www.youtube.com/watch?v=9encEthft8E&t=16s): work each double stitch as 1 st. Chart rows 1–8 line up with short rows 1–8.",
+  notes:{
+   1:{steps:[["Front","K2, [M1R](https://www.youtube.com/watch?v=n4bAF8eMcvM&t=18s), k1, sm"],["Sleeve","Chart A row 1, sm","A",9],["Back","Chart B row 1, sm","B",27],["Sleeve","Chart A row 1, sm","A",9],["Front","K1, M1L, k2, turn"]],s:72,shape:1},
+   2:{t:"Make double stitch, purl to BOR, sm, p1, turn."},
+   3:{steps:[["","DS, sm (BOR)"],["Front","K3, M1R, k1, sm"],["Sleeve","Chart A row 3, sm","A",11],["Back","Chart B row 3, sm","B",29],["Sleeve","Chart A row 3, sm","A",11],["Front","K1, M1L, k4, turn"]],s:80,shape:1},
+   4:{t:"DS, purl to BOR, sm, p2, turn."},
+   5:{steps:[["","DS, k1, sm (BOR)"],["Front","K4, M1R, k1, sm"],["Sleeve","Chart A row 5, sm","A",13],["Back","Chart B row 5, sm","B",31],["Sleeve","Chart A row 5, sm","A",13],["Front","K1, M1L, k6, turn"]],s:88,shape:1},
+   6:{t:"DS, purl to BOR, sm, p3, turn."},
+   7:{steps:[["","DS, k2, sm (BOR)"],["Front","K2tog, yo, k1, yo, sl1k-k1-psso, M1R, k1, sm"],["Sleeve","Chart A row 7, sm","A",15],["Back","Chart B row 7, sm","B",33],["Sleeve","Chart A row 7, sm","A",15],["Front","K1, M1L, k2tog, yo, k1, yo, sl1k-k1-psso, k3, turn"]],s:96,shape:1},
+   8:{t:"DS, purl to BOR, remove BOR marker, p3.",sub:"33 front · 15 sleeve · 33 back · 15 sleeve"}},
+  endText:"Turn and break yarn. From the RS, slip 25 sts from left to right needle, to the marker between left sleeve and back. That marker is the new BOR. Rejoin yarn and work in the round."},
+ {id:"yoke",group:"yoke",name:"Raglan yoke",castOn:96,castLabel:"On needle",rows:22,round:1,
+  charts:[["C","Front & back · Chart C"],["D","Sleeves · Chart D"]],
+  intro:"In the round from here: read every chart round right to left. Work grey repeats as many times as the stitches allow; each inc round adds 8 sts.",
+  notes:yokeNotes, ranges:[[2,20,"Knit (even chart round)."]],
+  endText:"Yoke done. 110 body sts on the needle, 37 sts held for each sleeve."},
+ {id:"body",group:"yoke",name:"Body",castOn:110,castLabel:"On needle",est:36,open:1,round:1,
+  charts:[["body","XS Body Chart"]],repeat:28,
+  intro:"Each half: 4 sts, 12-st grey repeat 4 times, 3 sts. Work the chart twice per round, slipping the side markers.",
+  measure:"Keep repeating the chart until the body measures 45 cm (17¾\") from the shoulder, ending on an even chart round.",
+  endText:"Body length reached. Go to the ribbed hem."},
+ {id:"hem",group:"yoke",name:"Ribbed hem",castOn:110,castLabel:"Change to 7 mm / US10¾",est:12,open:1,round:1,
+  notes:{1:{t:"Knit to end."}},ranges:[[2,999,"(k1, p1) to end."]],
+  measure:"Rib until the edge measures 7 cm (2¾\").",
+  endText:"With a 6 mm / US10 needle, bind off in rib using the [Italian bind off](https://www.youtube.com/watch?v=OzHgm6Gmhyc&t=10s)."},
+ {id:"sl1",group:"sleeves",name:"Sleeve 1",castOn:39,castLabel:"Pick up",est:46,open:1,round:1,
+  charts:[["sleeve","XS Sleeve Chart"]],repeat:28,
+  castText:"Move the 37 held sts to the 10 mm / US15 needle. Starting slightly left of the underarm centre, pick up and knit 1, knit around, pick up and knit 1 slightly right of centre. Place BOR = 39 sts.",
+  intro:"Each round: 8 sts, 12-st grey repeat twice, 7 sts.",
+  notes:{1:{t:"Sleeve Chart rnd 1."}},
+  measure:"Repeat the chart until the sleeve measures 33 cm (13\") from the underarm, or your length before the cuff, ending on an even chart round.",
+  endText:"Sleeve length reached. Go to the cuff."},
+ {id:"cf1",group:"sleeves",name:"Cuff 1",castOn:39,castLabel:"Change to 7 mm / US10¾ dpns",est:14,open:1,round:1,
+  notes:{1:{t:"Dec round: K1, p2tog, (k2tog, p2tog) to end.",s:20,shape:1}},ranges:[[2,999,"(k1, p1) to end."]],
+  measure:"Rib until the cuff measures 9 cm (3½\").",
+  endText:"With 6 mm / US10 dpns, bind off in rib using the Italian bind off."},
+ {id:"sl2",same:"sl1",name:"Sleeve 2"},
+ {id:"cf2",same:"cf1",name:"Cuff 2"},
+];
+PIECES.forEach((p,i)=>{if(p.same){const b=PIECES.find(x=>x.id===p.same);PIECES[i]=Object.assign({},b,{id:p.id,name:p.name});}});
+const CHECKS=[["ends","Weave in all loose ends"],["block","Block the sweater"],["share","Share it: #clotildesweater #knittingforolive"]];
+const GROUPS=[["yoke","Yoke & body"],["sleeves","Sleeves"]];
+
+// ---------- state ----------
+const LS="clotilde-xs-v1", DOC="progress/clotilde-xs";
+let S={rows:{},done:{},checks:{},last:null,updatedAt:0};
+try{const j=JSON.parse(localStorage.getItem(LS)||"null");if(j)S=Object.assign(S,j);}catch(e){}
+let syncState="local", pending=false, writing=false, timer=null, docRef=null;
+function save(){
+  S.updatedAt=Date.now();
+  try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
+  if(!docRef)return;
+  pending=true; setSync("wait"); clearTimeout(timer); timer=setTimeout(flush,700);
+}
+async function flush(){
+  if(!docRef||writing)return; writing=true;
+  const snap=JSON.parse(JSON.stringify(S));
+  pending=false;
+  for(let a=0;a<2;a++){
+    try{await docRef.set(snap);setSync(pending?"wait":"ok");break;}
+    catch(e){if(a===0&&e&&e.code==="unavailable"){await new Promise(r=>setTimeout(r,1200));continue;}setSync("err");}
+  }
+  writing=false; if(pending)flush();
+}
+function setSync(s){syncState=s;const el=document.getElementById("sync");if(el)el.innerHTML=syncHTML();}
+function syncHTML(){
+  const m={local:["","Saved on this device"],wait:["wait","Saving…"],ok:["ok","Synced across your devices"],err:["wait","Couldn't sync. Progress is kept on this device."]}[syncState];
+  return `<span class="dot ${m[0]}"></span>${m[1]}`;
+}
+(async()=>{
+  try{
+    const db=window.claude&&await window.claude.use("db");
+    if(!db)return;
+    docRef=db.doc(DOC); setSync("ok");
+    docRef.onSnapshot(snap=>{
+      if(!snap.exists){ if(S.updatedAt) save(); return; }
+      const d=snap.data();
+      if(d&&d.updatedAt>S.updatedAt&&!pending&&!writing){
+        S=Object.assign({rows:{},done:{},checks:{},last:null,updatedAt:0},d);
+        try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
+        render(true);
+      }
+      if(!pending&&!writing)setSync("ok");
+    },()=>setSync("err"));
+  }catch(e){}
+})();
+
+// ---------- helpers ----------
+const P=id=>PIECES.find(p=>p.id===id);
+const row=p=>S.rows[p.id]||0;
+const isDone=p=>p.open?!!S.done[p.id]:row(p)>p.rows;
+const total=p=>p.open?p.est:p.rows;
+function chartRow(p,r){const n=CH[p.charts[0][0]].rows;return p.repeat?((r-1)%n)+1:r;}
+function rep(p,r){return p.repeat?Math.floor((r-1)/p.repeat)+1:1;}
+function note(p,r){
+  if(p.notes&&p.notes[r]){const n=p.notes[r];if(n.steps&&!n.t)n.t=(n.lead?n.lead+" ":"")+n.steps.map(x=>(x[0]?x[0]+": ":"")+x[1]).join(" · ");return n;}
+  for(const [a,b,t] of (p.ranges||[]))if(r>=a&&r<=b)return {t};
+  if(p.charts){
+    const cr=chartRow(p,r), nm=p.charts.map(c=>c[1].split("·").pop().trim()).join(" + ");
+    if(p.id==="body"){const st=[["Back",`Body Chart rnd ${cr}, sm`,"body",55],["Front",`Body Chart rnd ${cr} to BOR`,"body",55]];
+      return {lead:r===1?"Set-up round.":cr===1?`Start of repeat ${rep(p,r)}.`:"",steps:st,t:`Back: Body Chart rnd ${cr}, sm · Front: Body Chart rnd ${cr} to BOR`};}
+    if(p.repeat&&r>p.repeat) return {t:`${nm}, round ${cr}${cr===1?" (start of repeat "+rep(p,r)+")":""}.`};
+    return {t:`${nm}, ${p.round?"round":"row"} ${cr}.`};
+  }
+  return {t:""};
+}
+function sts(p,r){let s=p.castOn;for(let i=1;i<=r;i++){const n=p.notes&&p.notes[i];if(n&&n.s)s=n.s;}return s;}
+function side(p,r){if(p.round)return {lab:"Round",dir:"← read right to left",ws:false};const ws=r%2===0;return {lab:ws?"WS row":"RS row",dir:ws?"read left to right →":"← read right to left",ws};}
+const fmt=s=>esc(s).replace(/\[([^\]]+)\]\((https:[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1 ↗</a>');
+const plain=s=>esc(String(s).replace(/\[([^\]]+)\]\([^)]+\)/g,"$1"));
+let stepDone={};try{stepDone=JSON.parse(localStorage.getItem(LS+"-steps")||"{}");}catch(e){}
+function stepsHTML(p,r,n){
+  const key=p.id+":"+r, dn=stepDone[key]||[];
+  return `${n.lead?`<div class="ins">${fmt(n.lead)}</div>`:""}<ol class="steps">${n.steps.map(([sec,t,ch,cnt],i)=>`<li class="${dn.includes(i)?"sd":""}"><button class="stp" data-step="${i}" aria-pressed="${dn.includes(i)}"><span class="ck">${dn.includes(i)?"✓":i+1}</span><span class="sx">${sec?`<span class="sec">${sec}</span>`:""}${fmt(t)}${cnt?` <span class="cnt mono">→ ${cnt}</span>`:""}</span></button>${ch&&p.charts&&p.charts.length>1?`<button class="chip" data-tab="${ch}" aria-label="Show chart ${ch}">Chart ${ch}</button>`:""}</li>`).join("")}</ol>`;
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// ---------- views ----------
+let curTab={}, zoom={};
+try{zoom=JSON.parse(localStorage.getItem(LS+"-zoom")||"{}");}catch(e){}
+const app=document.getElementById("app");
+function render(remote){
+  const h=location.hash.slice(1);
+  if(h==="finish")return renderFinish();
+  const p=P(h); if(p)return renderPiece(p,remote);
+  renderHome();
+}
+function renderHome(){
+  const last=S.last&&(S.last==="finish"?{id:"finish",name:"Finishing"}:P(S.last));
+  let html=`<header class="home"><span class="lab">Knitting for Olive · size XS</span><h1>Clotilde Sweater</h1>
+   <div class="sub">Top-down raglan in diamond lace. Bust 100 cm (39¼"), length 52 cm (20½"), sleeve 42 cm (16½").</div>
+   <dl class="spec"><dt>Yarn</dt><dd>2 strands Heavy Merino (8 balls) + 1 strand Soft Silk Mohair (3 balls), held together</dd>
+   <dt>Needles</dt><dd>10 mm / US15 body · 7 mm / US10¾ ribbing · 6 mm / US10 neck & Italian bind off</dd>
+   <dt>Gauge</dt><dd>11 sts × 14 rows = 10 cm in st st, 10 mm, 3 strands</dd></dl>
+   <div class="sync" id="sync">${syncHTML()}</div>`;
+  if(last&&!(last.id!=="finish"&&isDone(last)&&last.id==="cf2")){
+    const sub=last.id==="finish"?"Checklist":`${last.open||!isDone(last)?(row(last)?"Round "+row(last):"Not started"):"Finished"}`;
+    html+=`<button class="resume" data-go="${last.id}"><span><span class="lab" style="color:inherit;opacity:.8">Pick up where you left off</span><b>${esc(last.name)}</b><span style="font-size:.85rem">${sub}</span></span><span class="arrow">›</span></button>`;
+  }
+  html+=`</header>`;
+  for(const [g,gl] of GROUPS){
+    html+=`<section class="group"><h2>${gl}</h2>`;
+    for(const p of PIECES.filter(x=>x.group===g)){
+      const r=row(p), t=total(p), pct=isDone(p)?100:Math.min(100,Math.round(Math.min(r,t)/t*100));
+      const c=p.charts?CH[p.charts[0][0]]:null;
+      const rl=isDone(p)?"Finished":(r?`${p.round?"Rnd":"Row"} ${r} / ${p.open?"≈":""}${t}`:"Not started");
+      html+=`<button class="card${isDone(p)?" done":""}" data-go="${p.id}"><span><div class="nm">${esc(p.name)}</div>
+        <div class="meta">${p.castLabel||"Cast on"} ${p.castOn} · ${p.open?"≈"+t+" rnds, to length":t+(p.round?" rnds":" rows")}</div>
+        <div class="bar"><i style="width:${pct}%"></i></div><div class="rn mono">${rl}</div></span>
+        ${c?`<span class="th" style="background-image:url(${c.src})"></span>`:`<span class="th none">${p.id==="hem"||p.id.startsWith("cf")||p.id==="neck"?"⫴":"·"}</span>`}</button>`;
+    }
+    html+=`</section>`;
+  }
+  const nc=CHECKS.filter(c=>S.checks[c[0]]).length;
+  html+=`<section class="group"><h2>Finishing</h2><button class="card${nc===CHECKS.length?" done":""}" data-go="finish"><span><div class="nm">Finishing</div><div class="meta">${nc} of ${CHECKS.length} done</div><div class="bar"><i style="width:${nc/CHECKS.length*100}%"></i></div></span><span class="th none">✓</span></button></section>`;
+  app.innerHTML=html; window.scrollTo(0,0);
+}
+function renderFinish(){
+  S.last="finish";
+  app.innerHTML=`<div class="topbar"><button class="back" data-go="">‹ All</button><div class="t">Finishing</div><button class="nav" data-go="cf2" aria-label="Previous piece">‹</button><button class="nav" disabled aria-label="Next piece">›</button></div>
+   <div class="checks">${CHECKS.map(([k,t])=>`<button class="chk${S.checks[k]?" on":""}" data-chk="${k}"><span class="bx">${S.checks[k]?"✓":""}</span><span class="tx">${t}</span></button>`).join("")}</div>`;
+}
+let lastPiece=null;
+function renderPiece(p,remote){
+  const r=row(p), idx=PIECES.indexOf(p), prev=PIECES[idx-1], next=PIECES[idx+1];
+  if(S.last!==p.id){S.last=p.id; if(!remote)save();}
+  const t=total(p), sd=side(p,Math.max(r,1));
+  let rowcard;
+  if(r===0) rowcard=`<div class="rowcard"><span class="lab">${p.castLabel||"Cast on"} · ${p.castOn} sts</span><div class="ins">${fmt(p.castText||p.intro||"Ready when you are. Tap + for row 1.")}</div></div>`;
+  else if(isDone(p)||(!p.open&&r>t)) rowcard=`<div class="rowcard"><span class="lab">Finished · ${sts(p,r)} sts</span><div class="ins">${fmt(p.endText)}</div></div>`;
+  else{const n=note(p,r); rowcard=`<div class="rowcard${n.shape?" shape":""}"><span class="lab">${sd.lab} ${r}${p.charts?` · chart ${p.round?"rnd":"row"} ${chartRow(p,r)}${p.repeat&&r>p.repeat?" · repeat "+rep(p,r):""}`:""}${n.shape?" · shaping":""}</span>${n.steps?stepsHTML(p,r,n):`<div class="ins">${fmt(n.t)}</div>`}<div class="sts">After this ${p.round?"round":"row"}: <b class="mono">${sts(p,r)}</b> sts${n.sub?" · "+n.sub:""}</div></div>`;}
+  const big=r===0?"—":(isDone(p)||(!p.open&&r>t))?"✓":r;
+  const of=r===0?(p.castLabel||"Cast on"):(p.open?`of ≈${t} · ${p.measure?"knit to length":""}`:`of ${t}`);
+  let html=`<div class="topbar"><button class="back" data-go="">‹ All</button><div class="t">${esc(p.name)}</div>
+   <button class="nav" ${prev?`data-go="${prev.id}"`:"disabled"} aria-label="Previous piece">‹</button><button class="nav" data-go="${next?next.id:"finish"}" aria-label="Next piece">›</button></div>
+   <div class="ctr"><button class="minus" id="minus" aria-label="Previous row">−</button>
+   <div class="val"><div class="big mono">${big}</div><div class="of">${of}</div>${r>0&&!isDone(p)&&!(r>t&&!p.open)?`<div class="side">${sd.dir}</div>`:""}</div>
+   <button class="plus" id="plus" aria-label="Next row">+</button></div>${rowcard}`;
+  if(p.open&&p.measure&&r>0&&!isDone(p)) html+=`<div class="extra"><div class="box">${esc(p.measure)} ${r>=t?"<b>You're at the estimate: check with a tape measure.</b>":""}</div></div>`;
+  if(p.charts){
+    const tab=curTab[p.id]||p.charts[0][0];
+    html+=`<div class="chartpanel"><div class="chhead"><div class="tabs">${p.charts.map(([k,l])=>`<button class="tab" data-tab="${k}" aria-pressed="${k===tab}">${l}</button>`).join("")}</div>
+      <div class="zoom"><button id="zo" aria-label="Zoom out">−</button><button id="zi" aria-label="Zoom in">+</button></div></div>
+      <div class="cbox" id="cbox"><div class="cinner" id="cinner"><img src="${CH[tab].src}" alt="Chart ${tab}"><div class="wash" id="wash"></div><div class="band" id="band"></div></div><div class="tag" id="tag"></div></div>
+      ${p.intro&&r>0?`<div class="cnote">${fmt(p.intro)}</div>`:""}
+      <div class="legend">${KEY.map(([k,l])=>`<span><img src="charts/k_${k}.png" alt="">${l}</span>`).join("")}</div></div>`;
+  }
+  // row list
+  let max=p.open?Math.max(t,r+4):t;
+  let items=`<button class="ri${r===0?" now":""}" data-row="0"><span class="n">0</span><span class="x">${p.castLabel||"Cast on"} ${p.castOn} sts</span></button>`;
+  for(let i=1;i<=max;i++){
+    if(p.repeat&&i>1&&(i-1)%p.repeat===0) items+=`<div class="ri sep">Repeat ${rep(p,i)}</div>`;
+    const n=note(p,i);
+    items+=`<button class="ri${n.shape?" shape":""}${i<r?" past":""}${i===r&&!isDone(p)?" now":""}" data-row="${i}"><span class="n">${i}</span><span class="x">${plain(n.t)}${n.s?` <span class="mono">→ ${n.s}</span>`:""}</span></button>`;
+  }
+  if(!p.open) items+=`<button class="ri${r>t?" now":""}" data-row="${t+1}"><span class="n">✓</span><span class="x">${plain(p.endText)}</span></button>`;
+  html+=`<div class="list"><h3>All ${p.round?"rounds":"rows"}</h3><div class="rl">${items}</div></div>
+   <div class="foot">${p.open?(isDone(p)?`<button class="btn" id="undone">Reopen piece</button>`:`<button class="btn primary" id="finish">Mark ${esc(p.name.toLowerCase())} finished</button>`):""}
+   <span id="resetwrap"><button class="btn" id="reset">Reset counter</button></span></div>`;
+  app.innerHTML=html;
+  if(lastPiece!==p.id){window.scrollTo(0,0);lastPiece=p.id;}
+  if(p.charts)setupChart(p);
+}
+
+// ---------- chart ----------
+function setupChart(p){
+  const box=document.getElementById("cbox"), inner=document.getElementById("cinner");
+  const key=curTab[p.id]||p.charts[0][0], c=CH[key];
+  const native=(c.lines[0]-c.lines[c.rows])/c.rows;
+  const fit=()=>Math.max(4,(box.clientWidth-20)/c.w*native);
+  const clamp=v=>Math.min(Math.max(v,fit()),Math.max(fit()*2.5,40));
+  let rp=clamp(zoom[key]||Math.max(9,fit()));
+  const r=row(p), cr=r>0?chartRow(p,Math.min(r,p.open?r:p.rows)):0;
+  function lay(scroll){
+    const H=c.h*rp/native, W=c.w*rp/native;
+    inner.style.width=W+"px"; inner.style.height=H+"px";
+    const band=document.getElementById("band"), wash=document.getElementById("wash"), tag=document.getElementById("tag");
+    if(cr>=1&&cr<=c.rows&&!isDone(p)){
+      const top=c.lines[cr]/c.h*100, bot=c.lines[cr-1]/c.h*100;
+      band.style.top=top+"%"; band.style.height=(bot-top)+"%"; band.hidden=false;
+      wash.style.top=bot+"%"; wash.hidden=false;
+      const sd=side(p,r); tag.textContent=p.round?`← Rnd ${r}`:(sd.ws?`WS ${r} →`:`← RS ${r}`); tag.hidden=false;
+      const placeTag=()=>{
+        const y=10+(c.lines[cr]+c.lines[cr-1])/2/c.h*H;
+        tag.style.top=y+"px";
+        tag.style.left=(sd.ws?box.scrollLeft+box.clientWidth-tag.offsetWidth-6:box.scrollLeft+6)+"px";
+      };
+      placeTag(); box.onscroll=placeTag;
+      if(scroll){
+        const y=10+c.lines[cr]/c.h*H;
+        box.scrollTop=Math.max(0,y-box.clientHeight*0.6);
+        box.scrollLeft=Math.max(0,(inner.offsetWidth+20-box.clientWidth)/2);
+        placeTag();
+      }
+    }else{band.hidden=true;tag.hidden=true;wash.hidden=!isDone(p);wash.style.top="0";box.onscroll=null;
+      if(scroll){box.scrollTop=box.scrollHeight;box.scrollLeft=Math.max(0,(inner.offsetWidth+20-box.clientWidth)/2);}}
+  }
+  lay(true);
+  const z=f=>{rp=clamp(rp*f);zoom[key]=rp;try{localStorage.setItem(LS+"-zoom",JSON.stringify(zoom));}catch(e){}lay(true);};
+  document.getElementById("zi").onclick=()=>z(1.25);
+  document.getElementById("zo").onclick=()=>z(0.8);
+  inner.onclick=e=>{
+    const rect=inner.getBoundingClientRect(), y=(e.clientY-rect.top)/rect.height*c.h;
+    for(let k=1;k<=c.rows;k++){ if(y>=c.lines[k]-1&&y<=c.lines[k-1]+1){
+      let nr=k; if(p.repeat){const rp0=r>0?rep(p,r):1;nr=(rp0-1)*p.repeat+k;}
+      setRow(p,nr); return; } }
+  };
+}
+
+// ---------- actions ----------
+function setRow(p,v){
+  const max=p.open?9999:p.rows+1;
+  v=Math.max(0,Math.min(max,v));
+  if(p.open&&S.done[p.id]&&v!==row(p))S.done[p.id]=false;
+  S.rows[p.id]=v; save(); render();
+  wake();
+}
+document.addEventListener("click",e=>{
+  if(e.target.closest("a"))return;
+  const g=e.target.closest("[data-go]");
+  if(g){location.hash=g.dataset.go?"#"+g.dataset.go:"";if(!g.dataset.go)render();wake();return;}
+  const h=location.hash.slice(1), p=P(h);
+  const t=e.target.closest("button"); if(!t)return;
+  if(t.dataset.chk){S.checks[t.dataset.chk]=!S.checks[t.dataset.chk];save();render();return;}
+  if(!p)return;
+  if(t.id==="plus")return setRow(p,row(p)+1);
+  if(t.id==="minus")return setRow(p,row(p)-1);
+  if(t.dataset.row!==undefined)return setRow(p,+t.dataset.row);
+  if(t.dataset.tab){curTab[p.id]=t.dataset.tab;render();return;}
+  if(t.dataset.step!==undefined){const key=p.id+":"+row(p),i=+t.dataset.step,a=stepDone[key]||[];stepDone={[key]:a.includes(i)?a.filter(x=>x!==i):a.concat(i)};try{localStorage.setItem(LS+"-steps",JSON.stringify(stepDone));}catch(e){}
+    const n=note(p,row(p));if(!a.includes(i)&&n.steps[i]&&n.steps[i][2]&&n.steps[i+1]&&n.steps[i+1][2]&&p.charts.length>1)curTab[p.id]=n.steps[i+1][2];render();return;}
+  if(t.id==="finish"){S.done[p.id]=true;save();render();return;}
+  if(t.id==="undone"){S.done[p.id]=false;save();render();return;}
+  if(t.id==="reset"){document.getElementById("resetwrap").innerHTML=`<span style="font-size:.9rem;margin-right:6px">Reset ${esc(p.name)} to 0?</span><button class="btn warn" id="resetyes">Reset</button> <button class="btn" id="resetno">Keep</button>`;return;}
+  if(t.id==="resetyes"){S.rows[p.id]=0;S.done[p.id]=false;save();render();return;}
+  if(t.id==="resetno"){render();return;}
+});
+document.addEventListener("keydown",e=>{
+  const p=P(location.hash.slice(1)); if(!p||e.target.matches("input,textarea"))return;
+  if(e.key==="+"||e.key==="="||e.key==="ArrowRight"){e.preventDefault();setRow(p,row(p)+1);}
+  if(e.key==="-"||e.key==="ArrowLeft"){e.preventDefault();setRow(p,row(p)-1);}
+});
+window.addEventListener("hashchange",()=>render());
+let lock=null;
+async function wake(){try{if(!lock&&navigator.wakeLock){lock=await navigator.wakeLock.request("screen");lock.addEventListener("release",()=>lock=null);}}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&S.last)wake();});
+let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{const p=P(location.hash.slice(1));if(p&&p.charts)setupChart(p);},150);});
+render();
+if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+</script>
+
+</body>
+</html>
