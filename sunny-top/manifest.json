@@ -1,0 +1,25 @@
+{
+  "name": "Sunny Top Row Tracker",
+  "short_name": "Sunny Top",
+  "description": "Row-by-row tracker for the Sunny Top (We Are Knitters), size S, with a live lace chart",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFFCF4",
+  "theme_color": "#E3A419",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
