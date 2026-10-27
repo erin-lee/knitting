@@ -154,16 +154,18 @@ header.home h1{font-family:var(--display);font-weight:400;font-size:2.3rem;line-
 <div class="wrap" id="app"></div>
 
 <script>
-const CH={"A":{"src":"charts/A.png","w":512,"h":288,"lines":[282,248,213,178,143,108,74,39,4],"rows":8},"B":{"src":"charts/B.png","w":1062,"h":287,"lines":[282,248,213,178,143,108,74,39,4],"rows":8},"C":{"src":"charts/C.png","w":1351,"h":768,"lines":[763,729,694,660,625,591,556,522,487,452,418,384,349,314,280,246,211,176,142,108,73,38,4],"rows":22},"D":{"src":"charts/D.png","w":1224,"h":801,"lines":[796,760,724,688,652,616,580,544,508,472,436,400,364,328,292,256,220,184,148,112,76,40,4],"rows":22},"body":{"src":"charts/body.png","w":649,"h":1021,"lines":[1016,980,944,908,871,835,799,763,727,691,655,618,582,546,510,474,438,402,365,329,293,257,221,185,149,112,76,40,4],"rows":28},"sleeve":{"src":"charts/sleeve.png","w":905,"h":1021,"lines":[1016,980,944,908,871,835,799,763,727,691,655,618,582,546,510,474,438,402,365,329,293,257,221,185,149,112,76,40,4],"rows":28}};
+const CH={"A":{"src":"charts/A.png","w":512,"h":288,"lines":[282,248,213,178,143,108,74,39,4],"rows":8},"B":{"src":"charts/B.png","w":1062,"h":287,"lines":[282,248,213,178,143,108,74,39,4],"rows":8},"C":{"src":"charts/C.png","w":1351,"h":768,"lines":[763,729,694,660,625,591,556,522,487,452,418,384,349,314,280,246,211,176,142,108,73,38,4],"rows":22},"D":{"src":"charts/D.png","w":1224,"h":801,"lines":[796,760,724,688,652,616,580,544,508,472,436,400,364,328,292,256,220,184,148,112,76,40,4],"rows":22},"E":{"src":"charts/E.png","w":1480,"h":913,"lines":[908,872,836,800,763,727,691,655,619,583,546,510,474,438,402,366,329,293,257,221,185,149,112,76,40,4],"rows":25},"F":{"src":"charts/F.png","w":1672,"h":913,"lines":[908,872,836,800,763,727,691,655,619,583,546,510,474,438,402,366,329,293,257,221,185,149,112,76,40,4],"rows":25},"bodyS":{"src":"charts/bodyS.png","w":691,"h":990,"lines":[985,950,915,880,845,809,774,739,704,669,634,599,564,529,494,459,424,389,354,319,284,249,214,179,144,109,74,39,4],"rows":28},"sleeveS":{"src":"charts/sleeveS.png","w":938,"h":990,"lines":[985,950,915,880,845,809,774,739,704,669,634,599,564,529,494,459,424,389,354,319,284,249,214,179,144,109,74,39,4],"rows":28}};
 const KEY=[["k","K from RS, p from WS"],["k2tog","K2tog"],["ssk","Sl1k, k1, psso"],["cdd","Sl1k, k2tog, psso"],["yo","Yo"],["m1l","M1L"],["m1r","M1R"],["rep","Repeat section"]];
 
-// ---------- pattern data: size XS ----------
+// ---------- pattern data: size S ----------
 function yokeSteps(r){const k=(r+1)/2;return [["Back",`Chart C rnd ${r}, sm`,"C",33+2*k],["Sleeve",`Chart D rnd ${r}, sm`,"D",15+2*k],["Front",`Chart C rnd ${r}, sm`,"C",33+2*k],["Sleeve",`Chart D rnd ${r} to BOR`,"D",15+2*k]];}
 const yokeNotes={1:{lead:"Set-up inc round.",steps:yokeSteps(1),s:104,shape:1}};
 for(let r=3;r<=21;r+=2) yokeNotes[r]={lead:"Inc round.",steps:yokeSteps(r),s:96+8*(r+1)/2,shape:1};
-yokeNotes[21].lead="Inc round. Last chart round for XS.";
+yokeNotes[21].lead="Inc round. Last round of Charts C and D.";
 yokeNotes[21].sub="55 front · 55 back · 37 each sleeve";
-yokeNotes[22]={lead:"Divide body and sleeves.",steps:[["Back","Knit to marker, remove it"],["Sleeve","Place the next 37 sts on waste yarn, sm"],["Front","Knit to marker, remove it"],["Sleeve","Place the next 37 sts on waste yarn, sm (BOR)"]],s:110,shape:1,sub:"55 front · 55 back, sleeves on hold"};
+yokeNotes[22]={t:"Knit 1 round (Charts C and D, round 22)."};
+yokeNotes[23]={lead:"Inc round: round 1 of Charts E and F.",charts:[["E","Front & back · Chart E"],["F","Sleeves · Chart F"]],cr:1,steps:[["Back","Chart E rnd 1, sm","E",57],["Sleeve","Chart F rnd 1, sm","F",39],["Front","Chart E rnd 1, sm","E",57],["Sleeve","Chart F rnd 1 to BOR","F",39]],s:192,shape:1,sub:"57 front · 57 back · 39 each sleeve"};
+yokeNotes[24]={lead:"Divide body and sleeves.",steps:[["Back","Knit to marker, remove it"],["Sleeve","Place the next 39 sts on waste yarn, sm"],["Front","Knit to marker, remove it"],["Sleeve","Place the next 39 sts on waste yarn, sm (BOR)"]],s:114,shape:1,sub:"57 front · 57 back, sleeves on hold"};
 
 const PIECES=[
  {id:"neck",group:"yoke",name:"Ribbed neck",castOn:56,rows:9,round:1,
@@ -185,29 +187,29 @@ const PIECES=[
    7:{steps:[["","DS, k2, sm (BOR)"],["Front","K2tog, yo, k1, yo, sl1k-k1-psso, M1R, k1, sm"],["Sleeve","Chart A row 7, sm","A",15],["Back","Chart B row 7, sm","B",33],["Sleeve","Chart A row 7, sm","A",15],["Front","K1, M1L, k2tog, yo, k1, yo, sl1k-k1-psso, k3, turn"]],s:96,shape:1},
    8:{t:"DS, purl to BOR, remove BOR marker, p3.",sub:"33 front · 15 sleeve · 33 back · 15 sleeve"}},
   endText:"Turn and break yarn. From the RS, slip 25 sts from left to right needle, to the marker between left sleeve and back. That marker is the new BOR. Rejoin yarn and work in the round."},
- {id:"yoke",group:"yoke",name:"Raglan yoke",castOn:96,castLabel:"On needle",rows:22,round:1,
+ {id:"yoke",group:"yoke",name:"Raglan yoke",castOn:96,castLabel:"On needle",rows:24,round:1,
   charts:[["C","Front & back · Chart C"],["D","Sleeves · Chart D"]],
   intro:"In the round from here: read every chart round right to left. Work grey repeats as many times as the stitches allow; each inc round adds 8 sts.",
   notes:yokeNotes, ranges:[[2,20,"Knit (even chart round)."]],
-  endText:"Yoke done. 110 body sts on the needle, 37 sts held for each sleeve."},
- {id:"body",group:"yoke",name:"Body",castOn:110,castLabel:"On needle",est:36,open:1,round:1,
-  charts:[["body","XS Body Chart"]],repeat:28,
-  intro:"Each half: 4 sts, 12-st grey repeat 4 times, 3 sts. Work the chart twice per round, slipping the side markers.",
-  measure:"Keep repeating the chart until the body measures 45 cm (17¾\") from the shoulder, ending on an even chart round.",
+  endText:"Yoke done. 114 body sts on the needle, 39 sts held for each sleeve."},
+ {id:"body",group:"yoke",name:"Body",castOn:114,castLabel:"On needle",est:37,open:1,round:1,
+  charts:[["bodyS","S Body Chart"]],repeat:28,
+  intro:"Each half: 5 sts, 12-st grey repeat 4 times, 4 sts. Work the chart twice per round, slipping the side markers.",
+  measure:"Keep repeating the chart until the body measures 47 cm (18½\") from the shoulder, ending on an even chart round.",
   endText:"Body length reached. Go to the ribbed hem."},
- {id:"hem",group:"yoke",name:"Ribbed hem",castOn:110,castLabel:"Change to 7 mm / US10¾",est:12,open:1,round:1,
+ {id:"hem",group:"yoke",name:"Ribbed hem",castOn:114,castLabel:"Change to 7 mm / US10¾",est:12,open:1,round:1,
   notes:{1:{t:"Knit to end."}},ranges:[[2,999,"(k1, p1) to end."]],
   measure:"Rib until the edge measures 7 cm (2¾\").",
   endText:"With a 6 mm / US10 needle, bind off in rib using the [Italian bind off](https://www.youtube.com/watch?v=OzHgm6Gmhyc&t=10s)."},
- {id:"sl1",group:"sleeves",name:"Sleeve 1",castOn:39,castLabel:"Pick up",est:46,open:1,round:1,
-  charts:[["sleeve","XS Sleeve Chart"]],repeat:28,
-  castText:"Move the 37 held sts to the 10 mm / US15 needle. Starting slightly left of the underarm centre, pick up and knit 1, knit around, pick up and knit 1 slightly right of centre. Place BOR = 39 sts.",
-  intro:"Each round: 8 sts, 12-st grey repeat twice, 7 sts.",
+ {id:"sl1",group:"sleeves",name:"Sleeve 1",castOn:41,castLabel:"Pick up",est:47,open:1,round:1,
+  charts:[["sleeveS","S Sleeve Chart"]],repeat:28,
+  castText:"Move the 39 held sts to the 10 mm / US15 needle. Starting slightly left of the underarm centre, pick up and knit 1, knit around, pick up and knit 1 slightly right of centre. Place BOR = 41 sts.",
+  intro:"Each round: 9 sts, 12-st grey repeat twice, 8 sts.",
   notes:{1:{t:"Sleeve Chart rnd 1."}},
-  measure:"Repeat the chart until the sleeve measures 33 cm (13\") from the underarm, or your length before the cuff, ending on an even chart round.",
+  measure:"Repeat the chart until the sleeve measures 34 cm (13½\") from the underarm, or your length before the cuff, ending on an even chart round.",
   endText:"Sleeve length reached. Go to the cuff."},
- {id:"cf1",group:"sleeves",name:"Cuff 1",castOn:39,castLabel:"Change to 7 mm / US10¾ dpns",est:14,open:1,round:1,
-  notes:{1:{t:"Dec round: K1, p2tog, (k2tog, p2tog) to end.",s:20,shape:1}},ranges:[[2,999,"(k1, p1) to end."]],
+ {id:"cf1",group:"sleeves",name:"Cuff 1",castOn:41,castLabel:"Change to 7 mm / US10¾ dpns",est:14,open:1,round:1,
+  notes:{1:{t:"Dec round: Sl1k, k2tog, psso, p2tog, (k2tog, p2tog) to end.",s:20,shape:1}},ranges:[[2,999,"(k1, p1) to end."]],
   measure:"Rib until the cuff measures 9 cm (3½\").",
   endText:"With 6 mm / US10 dpns, bind off in rib using the Italian bind off."},
  {id:"sl2",same:"sl1",name:"Sleeve 2"},
@@ -266,6 +268,8 @@ const P=id=>PIECES.find(p=>p.id===id);
 const row=p=>S.rows[p.id]||0;
 const isDone=p=>p.open?!!S.done[p.id]:row(p)>p.rows;
 const total=p=>p.open?p.est:p.rows;
+function chartsAt(p,r){const n=r>0&&p.notes&&p.notes[r];if(n&&n.charts)return {cs:n.charts,cr:n.cr,ov:1};return {cs:p.charts,cr:r>0?chartRow(p,r):0,ov:0};}
+function tabFor(p,r){const cs=chartsAt(p,r).cs,t=curTab[p.id];return cs.some(c=>c[0]===t)?t:cs[0][0];}
 function chartRow(p,r){const n=CH[p.charts[0][0]].rows;return p.repeat?((r-1)%n)+1:r;}
 function rep(p,r){return p.repeat?Math.floor((r-1)/p.repeat)+1:1;}
 function note(p,r){
@@ -273,7 +277,7 @@ function note(p,r){
   for(const [a,b,t] of (p.ranges||[]))if(r>=a&&r<=b)return {t};
   if(p.charts){
     const cr=chartRow(p,r), nm=p.charts.map(c=>c[1].split("·").pop().trim()).join(" + ");
-    if(p.id==="body"){const st=[["Back",`Body Chart rnd ${cr}, sm`,"body",55],["Front",`Body Chart rnd ${cr} to BOR`,"body",55]];
+    if(p.id==="body"){const st=[["Back",`Body Chart rnd ${cr}, sm`,"bodyS",57],["Front",`Body Chart rnd ${cr} to BOR`,"bodyS",57]];
       return {lead:r===1?"Set-up round.":cr===1?`Start of repeat ${rep(p,r)}.`:"",steps:st,t:`Back: Body Chart rnd ${cr}, sm · Front: Body Chart rnd ${cr} to BOR`};}
     if(p.repeat&&r>p.repeat) return {t:`${nm}, round ${cr}${cr===1?" (start of repeat "+rep(p,r)+")":""}.`};
     return {t:`${nm}, ${p.round?"round":"row"} ${cr}.`};
@@ -287,7 +291,7 @@ const plain=s=>esc(String(s).replace(/\[([^\]]+)\]\([^)]+\)/g,"$1"));
 let stepDone={};try{stepDone=JSON.parse(localStorage.getItem(LS+"-steps")||"{}");}catch(e){}
 function stepsHTML(p,r,n){
   const key=p.id+":"+r, dn=stepDone[key]||[];
-  return `${n.lead?`<div class="ins">${fmt(n.lead)}</div>`:""}<ol class="steps">${n.steps.map(([sec,t,ch,cnt],i)=>`<li class="${dn.includes(i)?"sd":""}"><button class="stp" data-step="${i}" aria-pressed="${dn.includes(i)}"><span class="ck">${dn.includes(i)?"✓":i+1}</span><span class="sx">${sec?`<span class="sec">${sec}</span>`:""}${fmt(t)}${cnt?` <span class="cnt mono">→ ${cnt}</span>`:""}</span></button>${ch&&p.charts&&p.charts.length>1?`<button class="chip" data-tab="${ch}" aria-label="Show chart ${ch}">Chart ${ch}</button>`:""}</li>`).join("")}</ol>`;
+  return `${n.lead?`<div class="ins">${fmt(n.lead)}</div>`:""}<ol class="steps">${n.steps.map(([sec,t,ch,cnt],i)=>`<li class="${dn.includes(i)?"sd":""}"><button class="stp" data-step="${i}" aria-pressed="${dn.includes(i)}"><span class="ck">${dn.includes(i)?"✓":i+1}</span><span class="sx">${sec?`<span class="sec">${sec}</span>`:""}${fmt(t)}${cnt?` <span class="cnt mono">→ ${cnt}</span>`:""}</span></button>${ch&&p.charts&&chartsAt(p,r).cs.length>1?`<button class="chip" data-tab="${ch}" aria-label="Show chart ${ch}">Chart ${ch}</button>`:""}</li>`).join("")}</ol>`;
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -303,8 +307,8 @@ function render(remote){
 }
 function renderHome(){
   const last=S.last&&(S.last==="finish"?{id:"finish",name:"Finishing"}:P(S.last));
-  let html=`<header class="home"><span class="lab">Knitting for Olive · size XS</span><h1>Clotilde Sweater</h1>
-   <div class="sub">Top-down raglan in diamond lace. Bust 100 cm (39¼"), length 52 cm (20½"), sleeve 42 cm (16½").</div>
+  let html=`<header class="home"><span class="lab">Knitting for Olive · size S</span><h1>Clotilde Sweater</h1>
+   <div class="sub">Top-down raglan in diamond lace. Bust 104 cm (41"), length 54 cm (21¼"), sleeve 43 cm (17").</div>
    <dl class="spec"><dt>Yarn</dt><dd>2 strands Heavy Merino (8 balls) + 1 strand Soft Silk Mohair (3 balls), held together</dd>
    <dt>Needles</dt><dd>10 mm / US15 body · 7 mm / US10¾ ribbing · 6 mm / US10 neck & Italian bind off</dd>
    <dt>Gauge</dt><dd>11 sts × 14 rows = 10 cm in st st, 10 mm, 3 strands</dd></dl>
@@ -344,7 +348,7 @@ function renderPiece(p,remote){
   let rowcard;
   if(r===0) rowcard=`<div class="rowcard"><span class="lab">${p.castLabel||"Cast on"} · ${p.castOn} sts</span><div class="ins">${fmt(p.castText||p.intro||"Ready when you are. Tap + for row 1.")}</div></div>`;
   else if(isDone(p)||(!p.open&&r>t)) rowcard=`<div class="rowcard"><span class="lab">Finished · ${sts(p,r)} sts</span><div class="ins">${fmt(p.endText)}</div></div>`;
-  else{const n=note(p,r); rowcard=`<div class="rowcard${n.shape?" shape":""}"><span class="lab">${sd.lab} ${r}${p.charts?` · chart ${p.round?"rnd":"row"} ${chartRow(p,r)}${p.repeat&&r>p.repeat?" · repeat "+rep(p,r):""}`:""}${n.shape?" · shaping":""}</span>${n.steps?stepsHTML(p,r,n):`<div class="ins">${fmt(n.t)}</div>`}<div class="sts">After this ${p.round?"round":"row"}: <b class="mono">${sts(p,r)}</b> sts${n.sub?" · "+n.sub:""}</div></div>`;}
+  else{const n=note(p,r); rowcard=`<div class="rowcard${n.shape?" shape":""}"><span class="lab">${sd.lab} ${r}${p.charts&&chartsAt(p,r).cr<=CH[tabFor(p,r)].rows?` · chart ${chartsAt(p,r).ov?tabFor(p,r)+" ":""}${p.round?"rnd":"row"} ${chartsAt(p,r).cr}${p.repeat&&r>p.repeat?" · repeat "+rep(p,r):""}`:""}${n.shape?" · shaping":""}</span>${n.steps?stepsHTML(p,r,n):`<div class="ins">${fmt(n.t)}</div>`}<div class="sts">After this ${p.round?"round":"row"}: <b class="mono">${sts(p,r)}</b> sts${n.sub?" · "+n.sub:""}</div></div>`;}
   const big=r===0?"—":(isDone(p)||(!p.open&&r>t))?"✓":r;
   const of=r===0?(p.castLabel||"Cast on"):(p.open?`of ≈${t} · ${p.measure?"knit to length":""}`:`of ${t}`);
   let html=`<div class="topbar"><button class="back" data-go="">‹ All</button><div class="t">${esc(p.name)}</div>
@@ -354,8 +358,8 @@ function renderPiece(p,remote){
    <button class="plus" id="plus" aria-label="Next row">+</button></div>${rowcard}`;
   if(p.open&&p.measure&&r>0&&!isDone(p)) html+=`<div class="extra"><div class="box">${esc(p.measure)} ${r>=t?"<b>You're at the estimate: check with a tape measure.</b>":""}</div></div>`;
   if(p.charts){
-    const tab=curTab[p.id]||p.charts[0][0];
-    html+=`<div class="chartpanel"><div class="chhead"><div class="tabs">${p.charts.map(([k,l])=>`<button class="tab" data-tab="${k}" aria-pressed="${k===tab}">${l}</button>`).join("")}</div>
+    const tab=tabFor(p,r);
+    html+=`<div class="chartpanel"><div class="chhead"><div class="tabs">${chartsAt(p,r).cs.map(([k,l])=>`<button class="tab" data-tab="${k}" aria-pressed="${k===tab}">${l}</button>`).join("")}</div>
       <div class="zoom"><button id="zo" aria-label="Zoom out">−</button><button id="zi" aria-label="Zoom in">+</button></div></div>
       <div class="cbox" id="cbox"><div class="cinner" id="cinner"><img src="${CH[tab].src}" alt="Chart ${tab}"><div class="wash" id="wash"></div><div class="band" id="band"></div></div><div class="tag" id="tag"></div></div>
       ${p.intro&&r>0?`<div class="cnote">${fmt(p.intro)}</div>`:""}
@@ -381,12 +385,12 @@ function renderPiece(p,remote){
 // ---------- chart ----------
 function setupChart(p){
   const box=document.getElementById("cbox"), inner=document.getElementById("cinner");
-  const key=curTab[p.id]||p.charts[0][0], c=CH[key];
+  const key=tabFor(p,row(p)), c=CH[key];
   const native=(c.lines[0]-c.lines[c.rows])/c.rows;
   const fit=()=>Math.max(4,(box.clientWidth-20)/c.w*native);
   const clamp=v=>Math.min(Math.max(v,fit()),Math.max(fit()*2.5,40));
   let rp=clamp(zoom[key]||Math.max(9,fit()));
-  const r=row(p), cr=r>0?chartRow(p,Math.min(r,p.open?r:p.rows)):0;
+  const r=row(p), ca=chartsAt(p,Math.min(r,p.open?r:p.rows)), cr=r>0?ca.cr:0;
   function lay(scroll){
     const H=c.h*rp/native, W=c.w*rp/native;
     inner.style.width=W+"px"; inner.style.height=H+"px";
@@ -418,7 +422,7 @@ function setupChart(p){
   inner.onclick=e=>{
     const rect=inner.getBoundingClientRect(), y=(e.clientY-rect.top)/rect.height*c.h;
     for(let k=1;k<=c.rows;k++){ if(y>=c.lines[k]-1&&y<=c.lines[k-1]+1){
-      let nr=k; if(p.repeat){const rp0=r>0?rep(p,r):1;nr=(rp0-1)*p.repeat+k;}
+      let nr=k; if(ca.ov){if(k!==ca.cr)return;nr=r;} else if(p.repeat){const rp0=r>0?rep(p,r):1;nr=(rp0-1)*p.repeat+k;}
       setRow(p,nr); return; } }
   };
 }
@@ -444,7 +448,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.row!==undefined)return setRow(p,+t.dataset.row);
   if(t.dataset.tab){curTab[p.id]=t.dataset.tab;render();return;}
   if(t.dataset.step!==undefined){const key=p.id+":"+row(p),i=+t.dataset.step,a=stepDone[key]||[];stepDone={[key]:a.includes(i)?a.filter(x=>x!==i):a.concat(i)};try{localStorage.setItem(LS+"-steps",JSON.stringify(stepDone));}catch(e){}
-    const n=note(p,row(p));if(!a.includes(i)&&n.steps[i]&&n.steps[i][2]&&n.steps[i+1]&&n.steps[i+1][2]&&p.charts.length>1)curTab[p.id]=n.steps[i+1][2];render();return;}
+    const n=note(p,row(p));if(!a.includes(i)&&n.steps[i]&&n.steps[i][2]&&n.steps[i+1]&&n.steps[i+1][2])curTab[p.id]=n.steps[i+1][2];render();return;}
   if(t.id==="finish"){S.done[p.id]=true;save();render();return;}
   if(t.id==="undone"){S.done[p.id]=false;save();render();return;}
   if(t.id==="reset"){document.getElementById("resetwrap").innerHTML=`<span style="font-size:.9rem;margin-right:6px">Reset ${esc(p.name)} to 0?</span><button class="btn warn" id="resetyes">Reset</button> <button class="btn" id="resetno">Keep</button>`;return;}

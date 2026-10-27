@@ -1,7 +1,7 @@
 {
   "name": "Clotilde Sweater Row Tracker",
   "short_name": "Clotilde",
-  "description": "Row-by-row lace chart tracker for the Clotilde Sweater, size XS",
+  "description": "Row-by-row lace chart tracker for the Clotilde Sweater, size S",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

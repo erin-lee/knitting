@@ -1,6 +1,6 @@
 // Bump this version string whenever you update index.html so the new
 // version gets picked up instead of the cached one.
-const CACHE_NAME = 'clotilde-sweater-tracker-v2';
+const CACHE_NAME = 'clotilde-sweater-tracker-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -11,8 +11,10 @@ const ASSETS = [
   './charts/B.png',
   './charts/C.png',
   './charts/D.png',
-  './charts/body.png',
-  './charts/sleeve.png',
+  './charts/E.png',
+  './charts/F.png',
+  './charts/bodyS.png',
+  './charts/sleeveS.png',
   './charts/k_k.png',
   './charts/k_k2tog.png',
   './charts/k_ssk.png',
