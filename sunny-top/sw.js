@@ -1,6 +1,6 @@
 // Bump this version string whenever you update index.html so the new
 // version gets picked up instead of the cached one.
-const CACHE_NAME = 'sunny-top-tracker-v2';
+const CACHE_NAME = 'sunny-top-tracker-v3';
 const ASSETS = [
   './',
   './index.html',

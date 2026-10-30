@@ -102,7 +102,7 @@ h1,h2{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance}
 .xin span{position:absolute;top:0;transform:translateX(-50%);font:600 11px/21px var(--f-mono);color:var(--chart-ink);white-space:nowrap}
 .xin i{position:absolute;bottom:0;width:1px;height:4px;background:var(--chart-ink);opacity:.5}
 .chartbox{position:relative;height:340px;overflow:auto;border-radius:0 0 14px 14px;border:1px solid var(--line);background:var(--chart-bg);-webkit-overflow-scrolling:touch}
-.chartin{position:relative}
+.chartin{position:relative;margin-top:26px}
 .chartin img{display:block;max-width:none;user-select:none;-webkit-user-drag:none}
 .band{position:absolute;left:0;right:0;background:var(--band);border-top:2px solid var(--band-edge);border-bottom:2px solid var(--band-edge);pointer-events:none}
 .wash{position:absolute;left:0;right:0;background:var(--wash);pointer-events:none}
@@ -420,7 +420,7 @@ function placeTag(){ const box=$("#box"),tag=$("#tag"),xin=$("#xin"); if(!box) r
 function autoScroll(keepX){
   const p=P,c=CHARTS[p.chart],box=$("#box"),img=$("#cimg"); const n=cur(p),R=p.rows(); const s=img.clientHeight/c.h;
   let y; if(n>=1&&n<=R){ const i=p.chartRow(n)-c.base; y=c.lines[i]*s; } else if(n===0) y=c.lines[0]*s; else y=c.lines[c.lines.length-1]*s;
-  box.scrollTop=Math.max(0,y-box.clientHeight*0.6);
+  box.scrollTop=Math.max(0,y+26-box.clientHeight*0.6);
   if(!keepX){ if(p.id==="body") box.scrollLeft=Math.max(0,(img.clientWidth-box.clientWidth)*0.45); else box.scrollLeft=Math.max(0,(img.clientWidth-box.clientWidth)/2); }
   placeTag();
 }
